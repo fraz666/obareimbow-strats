@@ -1,0 +1,30 @@
+{
+    "layers": [
+        "basement",
+        "ground",
+        "1st-floor",
+        "roof"
+    ],
+    "bombsites": [
+        {
+            "name": "Lockers and CCTV Room",
+            "code": "lockers-cctv",
+            "layer": 0
+        },
+        {
+            "name": "Executive Lounge and CEO Office",
+            "code": "ceo-office",
+            "layer": 2
+        },
+        {
+            "name": "Teller's Office and Archives",
+            "code": "tellers-archives",
+            "layer": 1
+        },
+        {
+            "name": "Staff Room and Open Area",
+            "code": "open-area",
+            "layer": 1
+        }
+    ]
+}
