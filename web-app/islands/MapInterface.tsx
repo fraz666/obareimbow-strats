@@ -25,6 +25,19 @@ interface Player {
   name: string;
 }
 
+interface SavedStrategy {
+  id: string;
+  name: string;
+  map: string;
+  side: string;
+  bombsite: string;
+  players: Player[];
+  strokes: any[];
+  utilities: any[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 // R6S Operators data
 const OPERATORS = {
   attack: [
@@ -120,6 +133,10 @@ export default function MapInterface(props: MapInterfaceProps) {
   const selectedBombsite = useSignal<Bombsite | null>(bombsites[0] || null);
   const showOperatorSelect = useSignal(false);
   const operatorSelectForPlayer = useSignal<number | null>(null);
+  const showSaveDialog = useSignal(false);
+  const showLoadDialog = useSignal(false);
+  const strategyName = useSignal("");
+  const savedStrategies = useSignal<SavedStrategy[]>([]);
 
   // Initialize players
   const players = useSignal<Player[]>([
@@ -181,18 +198,32 @@ export default function MapInterface(props: MapInterfaceProps) {
   };
 
   const handleOperatorSelect = (operator: string) => {
+    console.log(
+      "Selected operator:",
+      operator,
+      "for player:",
+      operatorSelectForPlayer.value,
+    );
     if (operatorSelectForPlayer.value) {
       const newPlayers = [...players.value];
       newPlayers[operatorSelectForPlayer.value - 1].operator = operator;
       players.value = newPlayers;
+      console.log("Updated players:", players.value);
     }
     showOperatorSelect.value = false;
     operatorSelectForPlayer.value = null;
   };
 
   const openOperatorSelect = (playerId: number) => {
+    console.log("Opening operator select for player:", playerId);
+    console.log("Current side:", currentSide.value);
+    console.log(
+      "Available operators:",
+      OPERATORS[currentSide.value === "atk" ? "attack" : "defense"],
+    );
     operatorSelectForPlayer.value = playerId;
     showOperatorSelect.value = true;
+    console.log("showOperatorSelect.value:", showOperatorSelect.value);
   };
 
   const handleClearCanvas = () => {
@@ -201,6 +232,168 @@ export default function MapInterface(props: MapInterfaceProps) {
         .clearStratCanvas();
     }
   };
+
+  // Load saved strategies from localStorage on component mount
+  const loadSavedStrategies = () => {
+    try {
+      const saved = localStorage.getItem("r6s-strategies");
+      if (saved) {
+        const strategies = JSON.parse(saved) as SavedStrategy[];
+        savedStrategies.value = strategies;
+      }
+    } catch (error) {
+      console.error("Error loading saved strategies:", error);
+    }
+  };
+
+  // Save current strategy
+  const saveStrategy = () => {
+    if (!strategyName.value.trim()) {
+      alert("Please enter a strategy name");
+      return;
+    }
+
+    // Get current drawing data from StratPlanner
+    const currentStrokes = (globalThis as any).getCurrentStrokes?.() || [];
+    const currentUtilities = (globalThis as any).getCurrentUtilities?.() || [];
+
+    const strategy: SavedStrategy = {
+      id: Date.now().toString(),
+      name: strategyName.value.trim(),
+      map: map,
+      side: currentSide.value,
+      bombsite: selectedBombsite.value?.name || "",
+      players: [...players.value],
+      strokes: currentStrokes,
+      utilities: currentUtilities,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    const updatedStrategies = [...savedStrategies.value, strategy];
+    savedStrategies.value = updatedStrategies;
+
+    // Save to localStorage
+    try {
+      localStorage.setItem("r6s-strategies", JSON.stringify(updatedStrategies));
+      console.log("Strategy saved:", strategy.name);
+      showSaveDialog.value = false;
+      strategyName.value = "";
+    } catch (error) {
+      console.error("Error saving strategy:", error);
+      alert("Error saving strategy. Please try again.");
+    }
+  };
+
+  // Load a saved strategy
+  const loadStrategy = (strategy: SavedStrategy) => {
+    // Update current state
+    currentSide.value = strategy.side;
+    players.value = [...strategy.players];
+
+    // Find and select the bombsite
+    const bombsite = bombsites.find((b) => b.name === strategy.bombsite);
+    if (bombsite) {
+      selectedBombsite.value = bombsite;
+      currentLayerIndex.value = bombsite.layer;
+    }
+
+    // Load drawing data into StratPlanner
+    if ((globalThis as any).loadStrategyData) {
+      (globalThis as any).loadStrategyData(
+        strategy.strokes,
+        strategy.utilities,
+      );
+    }
+
+    showLoadDialog.value = false;
+    console.log("Strategy loaded:", strategy.name);
+  };
+
+  // Delete a saved strategy
+  const deleteStrategy = (strategyId: string) => {
+    if (confirm("Are you sure you want to delete this strategy?")) {
+      const updatedStrategies = savedStrategies.value.filter((s) =>
+        s.id !== strategyId
+      );
+      savedStrategies.value = updatedStrategies;
+
+      try {
+        localStorage.setItem(
+          "r6s-strategies",
+          JSON.stringify(updatedStrategies),
+        );
+        console.log("Strategy deleted");
+      } catch (error) {
+        console.error("Error deleting strategy:", error);
+      }
+    }
+  };
+
+  // Export strategies to file
+  const exportStrategies = () => {
+    try {
+      const dataStr = JSON.stringify(savedStrategies.value, null, 2);
+      const dataBlob = new Blob([dataStr], { type: "application/json" });
+      const url = URL.createObjectURL(dataBlob);
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `r6s-strategies-${map}-${
+        new Date().toISOString().split("T")[0]
+      }.json`;
+      link.click();
+
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error exporting strategies:", error);
+      alert("Error exporting strategies");
+    }
+  };
+
+  // Import strategies from file
+  const importStrategies = (event: Event) => {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const importedStrategies = JSON.parse(
+          e.target?.result as string,
+        ) as SavedStrategy[];
+
+        // Merge with existing strategies (avoid duplicates by ID)
+        const existingIds = new Set(savedStrategies.value.map((s) => s.id));
+        const newStrategies = importedStrategies.filter((s) =>
+          !existingIds.has(s.id)
+        );
+
+        const mergedStrategies = [...savedStrategies.value, ...newStrategies];
+        savedStrategies.value = mergedStrategies;
+
+        localStorage.setItem(
+          "r6s-strategies",
+          JSON.stringify(mergedStrategies),
+        );
+        console.log(`Imported ${newStrategies.length} new strategies`);
+        alert(`Successfully imported ${newStrategies.length} strategies`);
+      } catch (error) {
+        console.error("Error importing strategies:", error);
+        alert("Error importing strategies. Please check the file format.");
+      }
+    };
+
+    reader.readAsText(file);
+    input.value = ""; // Reset input
+  };
+
+  // Load strategies on component mount
+  if (typeof window !== "undefined") {
+    loadSavedStrategies();
+  }
 
   return (
     <div class="flex h-screen">
@@ -344,6 +537,52 @@ export default function MapInterface(props: MapInterfaceProps) {
           </div>
         </div>
 
+        {/* Strategy Management */}
+        <div class="p-4 border-b border-gray-700">
+          <h3 class="font-semibold mb-3">Strategy Management</h3>
+          <div class="space-y-2">
+            <button
+              type="button"
+              onClick={() => {
+                showSaveDialog.value = true;
+              }}
+              class="w-full px-3 py-2 bg-green-600 hover:bg-green-700 rounded text-sm transition-colors"
+            >
+              💾 Save Strategy
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                loadSavedStrategies();
+                showLoadDialog.value = true;
+              }}
+              class="w-full px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded text-sm transition-colors"
+            >
+              📂 Load Strategy
+            </button>
+            <div class="flex gap-2">
+              <button
+                type="button"
+                onClick={exportStrategies}
+                class="flex-1 px-3 py-2 bg-purple-600 hover:bg-purple-700 rounded text-sm transition-colors"
+              >
+                📤 Export
+              </button>
+              <label class="flex-1">
+                <input
+                  type="file"
+                  accept=".json"
+                  onChange={importStrategies}
+                  class="hidden"
+                />
+                <div class="px-3 py-2 bg-purple-600 hover:bg-purple-700 rounded text-sm transition-colors text-center cursor-pointer">
+                  📥 Import
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+
         {/* Bombsite Selection */}
         <BombsitePicker
           bombsites={bombsites}
@@ -393,22 +632,28 @@ export default function MapInterface(props: MapInterfaceProps) {
 
       {/* Operator Selection Modal */}
       {showOperatorSelect.value && (
-        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div
+          class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center"
+          style="z-index: 9999;"
+        >
           <div class="bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 max-h-96 overflow-y-auto">
-            <h3 class="text-lg font-semibold mb-4">Select Operator</h3>
+            <h3 class="text-lg font-semibold mb-4">
+              Select Operator (Player {operatorSelectForPlayer.value})
+            </h3>
             <div class="grid grid-cols-2 gap-2">
-              {OPERATORS[currentSide.value as keyof typeof OPERATORS].map((
-                op,
-              ) => (
-                <button
-                  type="button"
-                  key={op}
-                  onClick={() => handleOperatorSelect(op)}
-                  class="p-2 bg-gray-700 hover:bg-gray-600 rounded text-sm transition-colors text-left"
-                >
-                  {op}
-                </button>
-              ))}
+              {OPERATORS[currentSide.value === "atk" ? "attack" : "defense"]
+                .map((
+                  op,
+                ) => (
+                  <button
+                    type="button"
+                    key={op}
+                    onClick={() => handleOperatorSelect(op)}
+                    class="p-2 bg-gray-700 hover:bg-gray-600 rounded text-sm transition-colors text-left"
+                  >
+                    {op}
+                  </button>
+                ))}
             </div>
             <button
               type="button"
@@ -419,6 +664,120 @@ export default function MapInterface(props: MapInterfaceProps) {
               class="mt-4 w-full px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded transition-colors"
             >
               Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Save Strategy Dialog */}
+      {showSaveDialog.value && (
+        <div
+          class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center"
+          style="z-index: 9999;"
+        >
+          <div class="bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 class="text-lg font-semibold mb-4">Save Strategy</h3>
+            <div class="mb-4">
+              <label class="block text-sm font-medium mb-2">
+                Strategy Name
+              </label>
+              <input
+                type="text"
+                value={strategyName.value}
+                onInput={(e) =>
+                  strategyName.value = (e.target as HTMLInputElement).value}
+                placeholder="Enter strategy name..."
+                class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
+              />
+            </div>
+            <div class="text-sm text-gray-400 mb-4">
+              <div>Map: {map}</div>
+              <div>
+                Side: {currentSide.value === "atk" ? "Attack" : "Defense"}
+              </div>
+              <div>Bombsite: {selectedBombsite.value?.name || "None"}</div>
+            </div>
+            <div class="flex gap-2">
+              <button
+                type="button"
+                onClick={saveStrategy}
+                class="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 rounded transition-colors"
+              >
+                Save
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  showSaveDialog.value = false;
+                  strategyName.value = "";
+                }}
+                class="flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Load Strategy Dialog */}
+      {showLoadDialog.value && (
+        <div
+          class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center"
+          style="z-index: 9999;"
+        >
+          <div class="bg-gray-800 rounded-lg p-6 max-w-2xl w-full mx-4 max-h-96 overflow-y-auto">
+            <h3 class="text-lg font-semibold mb-4">Load Strategy</h3>
+            {savedStrategies.value.length === 0
+              ? (
+                <div class="text-gray-400 text-center py-8">
+                  No saved strategies found. Create and save a strategy first!
+                </div>
+              )
+              : (
+                <div class="space-y-2 mb-4">
+                  {savedStrategies.value
+                    .filter((s) => s.map === map)
+                    .map((strategy) => (
+                      <div
+                        key={strategy.id}
+                        class="flex items-center gap-3 p-3 bg-gray-700 rounded"
+                      >
+                        <div class="flex-1">
+                          <div class="font-medium">{strategy.name}</div>
+                          <div class="text-sm text-gray-400">
+                            {strategy.side === "atk"
+                              ? "🔫 Attack"
+                              : "🛡️ Defense"} • {strategy.bombsite}
+                          </div>
+                          <div class="text-xs text-gray-500">
+                            {new Date(strategy.createdAt).toLocaleDateString()}
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => loadStrategy(strategy)}
+                          class="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm transition-colors"
+                        >
+                          Load
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => deleteStrategy(strategy.id)}
+                          class="px-3 py-1 bg-red-600 hover:bg-red-700 rounded text-sm transition-colors"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    ))}
+                </div>
+              )}
+            <button
+              type="button"
+              onClick={() => showLoadDialog.value = false}
+              class="w-full px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded transition-colors"
+            >
+              Close
             </button>
           </div>
         </div>

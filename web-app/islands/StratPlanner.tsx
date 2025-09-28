@@ -284,11 +284,23 @@ export default function StratPlanner(props: StratPlannerProps) {
     // Keyboard events
     document.addEventListener("keydown", handleKeyDown);
 
+    // Functions to expose globally for save/load
+    const getCurrentStrokes = () => allStrokes.value;
+    const getCurrentUtilities = () => allUtilities.value;
+    const loadStrategyData = (strokes: any[], utilities: any[]) => {
+      allStrokes.value = strokes;
+      allUtilities.value = utilities;
+      redrawCanvas();
+    };
+
     // Expose functions globally for buttons
     (globalThis as { setDrawingMode?: (tool: string, color?: string) => void })
       .setDrawingMode = setDrawingMode;
     (globalThis as { clearStratCanvas?: () => void }).clearStratCanvas =
       clearCanvas;
+    (globalThis as any).getCurrentStrokes = getCurrentStrokes;
+    (globalThis as any).getCurrentUtilities = getCurrentUtilities;
+    (globalThis as any).loadStrategyData = loadStrategyData;
 
     return () => {
       globalThis.removeEventListener("resize", resizeCanvas);
@@ -301,6 +313,9 @@ export default function StratPlanner(props: StratPlannerProps) {
         setDrawingMode?: (tool: string, color?: string) => void;
       }).setDrawingMode;
       delete (globalThis as { clearStratCanvas?: () => void }).clearStratCanvas;
+      delete (globalThis as any).getCurrentStrokes;
+      delete (globalThis as any).getCurrentUtilities;
+      delete (globalThis as any).loadStrategyData;
     };
   }, [layers, side, currentLayerIndex, onLayerChange, selectedPlayer]);
 
