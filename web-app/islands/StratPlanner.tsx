@@ -1,24 +1,126 @@
 import { useSignal } from "@preact/signals";
 import { useEffect, useRef } from "preact/hooks";
 
+interface Player {
+  id: number;
+  operator: string | null;
+  color: string;
+  name: string;
+}
+
+interface DrawingStroke {
+  playerId: number;
+  color: string;
+  tool: string;
+  points: { x: number; y: number }[];
+  layer: number;
+}
+
+interface UtilityMarker {
+  playerId: number;
+  color: string;
+  x: number;
+  y: number;
+  layer: number;
+}
+
 interface StratPlannerProps {
   map: string;
   layers: string[];
   side: string;
   onLayerChange: (index: number) => void;
   currentLayerIndex: number;
+  selectedPlayer: number | null;
+  _players: Player[];
 }
 
 export default function StratPlanner(props: StratPlannerProps) {
-  const { map, layers, side, onLayerChange, currentLayerIndex } = props;
+  const {
+    map,
+    layers,
+    side,
+    onLayerChange,
+    currentLayerIndex,
+    selectedPlayer,
+    _players,
+  } = props;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
 
-  const drawingMode = useSignal("attack"); // attack, defense, callout
+  const drawingMode = useSignal("route");
+  const currentDrawingColor = useSignal("#ffffff");
   const isDrawing = useSignal(false);
+  const currentStroke = useSignal<{ x: number; y: number }[]>([]);
+
+  // Store all drawings persistently
+  const allStrokes = useSignal<DrawingStroke[]>([]);
+  const allUtilities = useSignal<UtilityMarker[]>([]);
+
   const currentLayer = layers[currentLayerIndex];
 
-  // Expose functions globally so sidebar buttons can access them
+  // Redraw all content when anything changes
+  const redrawCanvas = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw all strokes for current layer
+    allStrokes.value
+      .filter((stroke) => stroke.layer === currentLayerIndex)
+      .forEach((stroke) => {
+        if (stroke.points.length < 2) return;
+
+        ctx.beginPath();
+        ctx.lineWidth = 3;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+
+        // Set opacity based on whether this player is selected
+        const opacity = selectedPlayer === stroke.playerId ? 1.0 : 0.3;
+        ctx.strokeStyle = stroke.color +
+          Math.round(opacity * 255).toString(16).padStart(2, "0");
+
+        ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
+        for (let i = 1; i < stroke.points.length; i++) {
+          ctx.lineTo(stroke.points[i].x, stroke.points[i].y);
+        }
+        ctx.stroke();
+      });
+
+    // Draw all utility markers for current layer
+    allUtilities.value
+      .filter((utility) => utility.layer === currentLayerIndex)
+      .forEach((utility) => {
+        const opacity = selectedPlayer === utility.playerId ? 1.0 : 0.3;
+
+        // Draw circle background
+        ctx.beginPath();
+        ctx.arc(utility.x, utility.y, 12, 0, 2 * Math.PI);
+        ctx.fillStyle = utility.color +
+          Math.round(opacity * 255).toString(16).padStart(2, "0");
+        ctx.fill();
+
+        // Draw border
+        ctx.strokeStyle = "#000000" +
+          Math.round(opacity * 255).toString(16).padStart(2, "0");
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Draw "U" text
+        ctx.fillStyle = "#ffffff" +
+          Math.round(opacity * 255).toString(16).padStart(2, "0");
+        ctx.font = "bold 14px Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("U", utility.x, utility.y);
+      });
+  };
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -30,14 +132,13 @@ export default function StratPlanner(props: StratPlannerProps) {
     const resizeCanvas = () => {
       const container = canvas.parentElement;
       if (!container) return;
-      
+
       const rect = container.getBoundingClientRect();
       canvas.width = rect.width;
       canvas.height = rect.height;
-      
-      // Configure drawing context
-      ctx.lineJoin = "round";
-      ctx.lineCap = "round";
+
+      // Redraw after resize
+      redrawCanvas();
     };
 
     // Get correct mouse coordinates relative to canvas
@@ -45,45 +146,81 @@ export default function StratPlanner(props: StratPlannerProps) {
       const rect = canvas.getBoundingClientRect();
       const scaleX = canvas.width / rect.width;
       const scaleY = canvas.height / rect.height;
-      
+
       return {
         x: (e.clientX - rect.left) * scaleX,
-        y: (e.clientY - rect.top) * scaleY
+        y: (e.clientY - rect.top) * scaleY,
       };
     };
 
     // Drawing event handlers
     const startDrawing = (e: MouseEvent) => {
-      isDrawing.value = true;
+      if (!selectedPlayer) return;
+
       const pos = getMousePos(e);
-      
-      ctx.beginPath();
-      ctx.lineWidth = 3;
-      
-      // Set color based on drawing mode
-      if (drawingMode.value === "attack") {
-        ctx.strokeStyle = "#ef4444"; // red for attack routes
-      } else if (drawingMode.value === "defense") {
-        ctx.strokeStyle = "#f97316"; // orange for defense positions
+
+      if (drawingMode.value === "utility") {
+        // Place utility marker immediately
+        const newUtility: UtilityMarker = {
+          playerId: selectedPlayer,
+          color: currentDrawingColor.value,
+          x: pos.x,
+          y: pos.y,
+          layer: currentLayerIndex,
+        };
+        allUtilities.value = [...allUtilities.value, newUtility];
+        redrawCanvas();
       } else {
-        ctx.strokeStyle = "#eab308"; // yellow for callouts
+        // Start drawing stroke
+        isDrawing.value = true;
+        currentStroke.value = [pos];
       }
-      
-      ctx.moveTo(pos.x, pos.y);
     };
 
     const draw = (e: MouseEvent) => {
-      if (!isDrawing.value) return;
-      
+      if (
+        !isDrawing.value || !selectedPlayer || drawingMode.value === "utility"
+      ) return;
+
       const pos = getMousePos(e);
-      ctx.lineTo(pos.x, pos.y);
-      ctx.stroke();
+      currentStroke.value = [...currentStroke.value, pos];
+
+      // Draw current stroke in real-time
+      if (currentStroke.value.length >= 2) {
+        const points = currentStroke.value;
+        const lastPoint = points[points.length - 2];
+
+        ctx.beginPath();
+        ctx.lineWidth = 3;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        ctx.strokeStyle = currentDrawingColor.value;
+        ctx.moveTo(lastPoint.x, lastPoint.y);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+      }
     };
 
     const stopDrawing = () => {
-      if (!isDrawing.value) return;
+      if (
+        !isDrawing.value || !selectedPlayer || drawingMode.value === "utility"
+      ) return;
+
+      // Save the completed stroke
+      if (currentStroke.value.length >= 2) {
+        const newStroke: DrawingStroke = {
+          playerId: selectedPlayer,
+          color: currentDrawingColor.value,
+          tool: drawingMode.value,
+          points: [...currentStroke.value],
+          layer: currentLayerIndex,
+        };
+        allStrokes.value = [...allStrokes.value, newStroke];
+      }
+
       isDrawing.value = false;
-      ctx.closePath();
+      currentStroke.value = [];
+      redrawCanvas();
     };
 
     // Keyboard controls for layer switching
@@ -100,17 +237,22 @@ export default function StratPlanner(props: StratPlannerProps) {
     };
 
     // Functions to expose globally
-    const setDrawingMode = (mode: string) => {
+    const setDrawingMode = (mode: string, color?: string) => {
       drawingMode.value = mode;
+      if (color) {
+        currentDrawingColor.value = color;
+      }
     };
 
     const clearCanvas = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      allStrokes.value = [];
+      allUtilities.value = [];
+      redrawCanvas();
     };
 
     // Initialize
     resizeCanvas();
-    window.addEventListener("resize", resizeCanvas);
+    globalThis.addEventListener("resize", resizeCanvas);
 
     // Mouse events
     canvas.addEventListener("mousedown", startDrawing);
@@ -122,35 +264,44 @@ export default function StratPlanner(props: StratPlannerProps) {
     document.addEventListener("keydown", handleKeyDown);
 
     // Expose functions globally for buttons
-    (window as any).setDrawingMode = setDrawingMode;
-    (window as any).clearStratCanvas = clearCanvas;
+    (globalThis as { setDrawingMode?: (tool: string, color?: string) => void })
+      .setDrawingMode = setDrawingMode;
+    (globalThis as { clearStratCanvas?: () => void }).clearStratCanvas =
+      clearCanvas;
 
     return () => {
-      window.removeEventListener("resize", resizeCanvas);
+      globalThis.removeEventListener("resize", resizeCanvas);
       canvas.removeEventListener("mousedown", startDrawing);
       canvas.removeEventListener("mousemove", draw);
       canvas.removeEventListener("mouseup", stopDrawing);
       canvas.removeEventListener("mouseout", stopDrawing);
       document.removeEventListener("keydown", handleKeyDown);
-      delete (window as any).setDrawingMode;
-      delete (window as any).clearStratCanvas;
+      delete (globalThis as {
+        setDrawingMode?: (tool: string, color?: string) => void;
+      }).setDrawingMode;
+      delete (globalThis as { clearStratCanvas?: () => void }).clearStratCanvas;
     };
-  }, [layers, side, currentLayerIndex, onLayerChange]);
+  }, [layers, side, currentLayerIndex, onLayerChange, selectedPlayer]);
+
+  // Redraw when selected player changes or layer changes
+  useEffect(() => {
+    redrawCanvas();
+  }, [selectedPlayer, currentLayerIndex, allStrokes.value, allUtilities.value]);
 
   return (
-    <div class="strat-planner-container">
+    <div className="strat-planner-container">
       {/* Map image */}
-      <img 
+      <img
         ref={imageRef}
-        src={`/maps/${map}/${currentLayer}.jpg`} 
+        src={`/maps/${map}/${currentLayer}.jpg`}
         alt={`${map} ${currentLayer}`}
-        class="map-image"
+        className="map-image"
       />
-      
+
       {/* Drawing canvas */}
-      <canvas 
+      <canvas
         ref={canvasRef}
-        class="drawing-canvas"
+        className="drawing-canvas"
       />
     </div>
   );

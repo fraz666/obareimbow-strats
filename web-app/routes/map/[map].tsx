@@ -38,10 +38,17 @@ export default define.page<typeof handler>((props) => {
   return (
     <div class="min-h-screen bg-gray-900 text-white">
       <Head>
-        <title>{map.charAt(0).toUpperCase() + map.slice(1)} - Strategy Planner</title>
+        <title>
+          {map.charAt(0).toUpperCase() + map.slice(1)} - Strategy Planner
+        </title>
       </Head>
-      
-      <MapInterface map={map} layers={layers} bombsites={bombsites} side={side} />
+
+      <MapInterface
+        map={map}
+        layers={layers}
+        bombsites={bombsites}
+        side={side}
+      />
     </div>
   );
 });
