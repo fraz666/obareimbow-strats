@@ -1,83 +1,279 @@
-import { computed, effect, useSignal } from "@preact/signals";
-import { useEffect } from "preact/hooks";
-import SidePicker from "./SidePicker.tsx";
-import BombsitePicker from "./BombsitePicker.tsx";
-import { Bombsite } from "./models/bombsite.ts";
+/** @jsxImportSource preact */
+
+import { useSignal } from "@preact/signals";
+import { useEffect, useRef } from "preact/hooks";
+
+interface Player {
+  id: number;
+  operator: string | null;
+  color: string;
+  name: string;
+}
+
+interface DrawingStroke {
+  playerId: number;
+  color: string;
+  tool: string;
+  points: { x: number; y: number }[];
+  layer: number;
+}
+
+interface UtilityMarker {
+  playerId: number;
+  color: string;
+  x: number;
+  y: number;
+  layer: number;
+}
 
 interface StratPlannerProps {
   map: string;
   layers: string[];
-  bombsites: Bombsite[];
+  side: string;
+  onLayerChange: (index: number) => void;
+  currentLayerIndex: number;
+  selectedPlayer: number | null;
+  _players: Player[];
 }
 
 export default function StratPlanner(props: StratPlannerProps) {
-  // const map = props.map;
-  // const layers = props.layers;
-  // const bombsites = props.bombsites;
-
-  const { map, layers, bombsites } = props;
-
-  const state = useSignal({
+  const {
     map,
     layers,
-    layerSelected: layers[0],
-    bombsites,
-    bombsiteSelected: bombsites[0],
-  });
+    side,
+    onLayerChange,
+    currentLayerIndex,
+    selectedPlayer,
+    _players,
+  } = props;
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
 
-  const lowestLayer = 0;
-  const highestLayer = layers.length - 1;
-  const currentLayerIndex = useSignal(lowestLayer);
-  // const currentLayer = useSignal(layers[lowestLayer]);
-  const currentLayer = computed( () => layers[currentLayerIndex.value]);
+  const drawingMode = useSignal("route");
+  const currentDrawingColor = useSignal("#ffffff");
+  const isDrawing = useSignal(false);
+  const currentStroke = useSignal<{ x: number; y: number }[]>([]);
+
+  // Store all drawings persistently
+  const allStrokes = useSignal<DrawingStroke[]>([]);
+  const allUtilities = useSignal<UtilityMarker[]>([]);
+
+  const currentLayer = layers[currentLayerIndex];
+
+  // Redraw all content when anything changes
+  const redrawCanvas = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw all strokes for current layer
+    allStrokes.value
+      .filter((stroke) => stroke.layer === currentLayerIndex)
+      .forEach((stroke) => {
+        if (stroke.points.length < 2) return;
+
+        ctx.beginPath();
+        ctx.lineWidth = 3;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+
+        // Set opacity based on whether this player is selected
+        const opacity = selectedPlayer === stroke.playerId ? 1.0 : 0.3;
+        ctx.strokeStyle = stroke.color +
+          Math.round(opacity * 255).toString(16).padStart(2, "0");
+
+        ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
+        for (let i = 1; i < stroke.points.length; i++) {
+          ctx.lineTo(stroke.points[i].x, stroke.points[i].y);
+        }
+        ctx.stroke();
+      });
+
+    // Draw all utility markers for current layer
+    allUtilities.value
+      .filter((utility) => utility.layer === currentLayerIndex)
+      .forEach((utility) => {
+        const opacity = selectedPlayer === utility.playerId ? 1.0 : 0.3;
+
+        // Draw circle background
+        ctx.beginPath();
+        ctx.arc(utility.x, utility.y, 12, 0, 2 * Math.PI);
+        ctx.fillStyle = utility.color +
+          Math.round(opacity * 255).toString(16).padStart(2, "0");
+        ctx.fill();
+
+        // Draw border
+        ctx.strokeStyle = "#000000" +
+          Math.round(opacity * 255).toString(16).padStart(2, "0");
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Draw "U" text
+        ctx.fillStyle = "#ffffff" +
+          Math.round(opacity * 255).toString(16).padStart(2, "0");
+        ctx.font = "bold 14px Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("U", utility.x, utility.y);
+      });
+  };
 
   useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "+" && currentLayerIndex.value < highestLayer) {
-        currentLayerIndex.value += 1;
-      }
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-      if (event.key === "-" && currentLayerIndex.value > lowestLayer) {
-        currentLayerIndex.value -= 1;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    // Set up canvas
+    const resizeCanvas = () => {
+      const container = canvas.parentElement;
+      if (!container) return;
+
+      const rect = container.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+
+      // Redraw after resize
+      redrawCanvas();
+    };
+
+    // Get correct mouse coordinates relative to canvas
+    const getMousePos = (e: MouseEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+
+      return {
+        x: (e.clientX - rect.left) * scaleX,
+        y: (e.clientY - rect.top) * scaleY,
+      };
+    };
+
+    // Drawing event handlers
+    const startDrawing = (e: MouseEvent) => {
+      // Allow drawing even without selected player for testing
+      console.log("Starting drawing, selectedPlayer:", selectedPlayer);
+
+      const pos = getMousePos(e);
+      console.log("Mouse position:", pos);
+
+      if (drawingMode.value === "utility") {
+        // Place utility marker immediately
+        const newUtility: UtilityMarker = {
+          playerId: selectedPlayer || 1, // Default to player 1 if none selected
+          color: currentDrawingColor.value || "#ff0000", // Default to red
+          x: pos.x,
+          y: pos.y,
+          layer: currentLayerIndex,
+        };
+        allUtilities.value = [...allUtilities.value, newUtility];
+        console.log("Placed utility marker:", newUtility);
+        redrawCanvas();
+      } else {
+        // Start drawing stroke
+        isDrawing.value = true;
+        currentStroke.value = [pos];
+        console.log("Started drawing stroke");
       }
     };
 
-    const drawOverlay = () => {
-      const canvasElement = document.getElementById(
-        "strat-planner-canvas",
-      ) as HTMLCanvasElement;
-      const context = canvasElement.getContext("2d");
+    const draw = (e: MouseEvent) => {
+      if (
+        !isDrawing.value || drawingMode.value === "utility"
+      ) return;
 
-      canvasElement.width = 1414;
-      canvasElement.height = 795;
+      const pos = getMousePos(e);
+      currentStroke.value = [...currentStroke.value, pos];
 
-      if (!canvasElement || !context) return;
+      // Draw current stroke in real-time
+      if (currentStroke.value.length >= 2) {
+        const points = currentStroke.value;
+        const lastPoint = points[points.length - 2];
 
-      let isDrawing: boolean;
-      canvasElement.onmousedown = (e) => {
-        isDrawing = true;
-        context.beginPath();
-        context.lineWidth = 5;
-        context.strokeStyle = "red";
-        context.lineJoin = "round";
-        context.lineCap = "round";
-        context.moveTo(e.clientX, e.clientY);
-      };
+        ctx.beginPath();
+        ctx.lineWidth = 3;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        ctx.strokeStyle = currentDrawingColor.value || "#ff0000"; // Default to red
+        ctx.moveTo(lastPoint.x, lastPoint.y);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+      }
+    };
 
-      canvasElement.onmousemove = (e) => {
-        if (isDrawing) {
-          context.lineTo(e.clientX, e.clientY);
-          context.stroke();
+    const stopDrawing = () => {
+      if (
+        !isDrawing.value || drawingMode.value === "utility"
+      ) return;
+
+      console.log(
+        "Stopping drawing, stroke length:",
+        currentStroke.value.length,
+      );
+
+      // Save the completed stroke
+      if (currentStroke.value.length >= 2) {
+        const newStroke: DrawingStroke = {
+          playerId: selectedPlayer || 1, // Default to player 1
+          color: currentDrawingColor.value || "#ff0000", // Default to red
+          tool: drawingMode.value,
+          points: [...currentStroke.value],
+          layer: currentLayerIndex,
+        };
+        allStrokes.value = [...allStrokes.value, newStroke];
+        console.log("Saved stroke:", newStroke);
+      }
+
+      isDrawing.value = false;
+      currentStroke.value = [];
+      redrawCanvas();
+    };
+
+    // Keyboard controls for layer switching
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "+" || e.key === "=") {
+        if (currentLayerIndex < layers.length - 1) {
+          onLayerChange(currentLayerIndex + 1);
         }
-      };
-
-      canvasElement.onmouseup = function () {
-        isDrawing = false;
-        context.closePath();
-      };
+      } else if (e.key === "-" || e.key === "_") {
+        if (currentLayerIndex > 0) {
+          onLayerChange(currentLayerIndex - 1);
+        }
+      }
     };
 
-    drawOverlay();
+    // Functions to expose globally
+    const setDrawingMode = (mode: string, color?: string) => {
+      drawingMode.value = mode;
+      if (color) {
+        currentDrawingColor.value = color;
+      }
+    };
+
+    const clearCanvas = () => {
+      allStrokes.value = [];
+      allUtilities.value = [];
+      redrawCanvas();
+    };
+
+    // Initialize
+    resizeCanvas();
+    globalThis.addEventListener("resize", resizeCanvas);
+
+    // Debug: Draw a test line to verify canvas is working
+    ctx.beginPath();
+    ctx.moveTo(10, 10);
+    ctx.lineTo(100, 100);
+    ctx.strokeStyle = "#ff0000";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    console.log("Canvas initialized, test line drawn");
 
     // Mouse events
     canvas.addEventListener("mousedown", startDrawing);
@@ -106,22 +302,28 @@ export default function StratPlanner(props: StratPlannerProps) {
       }).setDrawingMode;
       delete (globalThis as { clearStratCanvas?: () => void }).clearStratCanvas;
     };
-  }, []);
+  }, [layers, side, currentLayerIndex, onLayerChange, selectedPlayer]);
 
+  // Redraw when selected player changes or layer changes
   useEffect(() => {
-    const bombsite = state.value.bombsiteSelected;
-    console.log("Current layer changed to:", bombsite);
-    currentLayerIndex.value = bombsite.layer;
-  }, [state.value.bombsiteSelected]);
+    redrawCanvas();
+  }, [selectedPlayer, currentLayerIndex, allStrokes.value, allUtilities.value]);
 
   return (
-    <>
-      <SidePicker />
-      <BombsitePicker state={state} />
-      <div id="strat-planner">
-        <canvas id="strat-planner-canvas" />
-        <img src={`/maps/${map}/${currentLayer.value}.jpg`} alt={map} />
-      </div>
-    </>
+    <div class="strat-planner-container">
+      {/* Map image */}
+      <img
+        ref={imageRef}
+        src={`/maps/${map}/${currentLayer}.jpg`}
+        alt={`${map} ${currentLayer}`}
+        class="map-image"
+      />
+
+      {/* Drawing canvas */}
+      <canvas
+        ref={canvasRef}
+        class="drawing-canvas"
+      />
+    </div>
   );
 }

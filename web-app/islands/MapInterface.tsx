@@ -1,5 +1,9 @@
+/** @jsxImportSource preact */
+
 import { useSignal } from "@preact/signals";
 import StratPlanner from "./StratPlanner.tsx";
+import BombsitePicker from "./BombsitePicker.tsx";
+import SidePicker from "./SidePicker.tsx";
 
 interface Bombsite {
   name: string;
@@ -109,9 +113,11 @@ const PLAYER_COLORS = [
 
 export default function MapInterface(props: MapInterfaceProps) {
   const { map, layers, bombsites, side } = props;
+  const currentSide = useSignal(side);
   const currentLayerIndex = useSignal(0);
   const activeDrawingTool = useSignal(side === "atk" ? "route" : "position");
   const selectedPlayer = useSignal<number | null>(null);
+  const selectedBombsite = useSignal<Bombsite | null>(bombsites[0] || null);
   const showOperatorSelect = useSignal(false);
   const operatorSelectForPlayer = useSignal<number | null>(null);
 
@@ -126,6 +132,20 @@ export default function MapInterface(props: MapInterfaceProps) {
 
   const handleLayerChange = (index: number) => {
     currentLayerIndex.value = index;
+  };
+
+  const handleBombsiteSelect = (bombsite: Bombsite) => {
+    selectedBombsite.value = bombsite;
+    // Automatically switch to the bombsite's floor
+    currentLayerIndex.value = bombsite.layer;
+  };
+
+  const handleSideChange = (newSide: string) => {
+    currentSide.value = newSide;
+    // Update drawing tool based on side
+    activeDrawingTool.value = newSide === "atk" ? "route" : "position";
+    // Clear player selection when switching sides
+    selectedPlayer.value = null;
   };
 
   const handleDrawingToolChange = (tool: string) => {
@@ -198,31 +218,11 @@ export default function MapInterface(props: MapInterfaceProps) {
         </div>
 
         {/* Side Selection */}
-        <div class="p-4 border-b border-gray-700">
-          <h3 class="font-semibold mb-3">Team Side</h3>
-          <div class="flex gap-2">
-            <a
-              href={`/map/${map}?side=atk`}
-              class={`px-4 py-2 rounded text-sm font-medium transition-colors ${
-                side === "atk"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-700 text-gray-300 hover:bg-gray-600"
-              }`}
-            >
-              Attack
-            </a>
-            <a
-              href={`/map/${map}?side=def`}
-              class={`px-4 py-2 rounded text-sm font-medium transition-colors ${
-                side === "def"
-                  ? "bg-orange-600 text-white"
-                  : "bg-gray-700 text-gray-300 hover:bg-gray-600"
-              }`}
-            >
-              Defense
-            </a>
-          </div>
-        </div>
+        <SidePicker
+          currentSide={currentSide.value}
+          onSideChange={handleSideChange}
+          map={map}
+        />
 
         {/* Player Slots */}
         <div class="p-4 border-b border-gray-700">
@@ -282,7 +282,7 @@ export default function MapInterface(props: MapInterfaceProps) {
               : "Select a player first"}
           </div>
           <div class="space-y-2">
-            {side === "atk" && (
+            {currentSide.value === "atk" && (
               <button
                 type="button"
                 onClick={() => handleDrawingToolChange("route")}
@@ -296,7 +296,7 @@ export default function MapInterface(props: MapInterfaceProps) {
                 Attack Route
               </button>
             )}
-            {side === "def" && (
+            {currentSide.value === "def" && (
               <button
                 type="button"
                 onClick={() => handleDrawingToolChange("position")}
@@ -344,25 +344,13 @@ export default function MapInterface(props: MapInterfaceProps) {
           </div>
         </div>
 
-        {/* Bombsites */}
-        <div class="p-4 border-b border-gray-700">
-          <h3 class="font-semibold mb-3">Bombsites</h3>
-          <div class="space-y-2">
-            {bombsites.map((site: Bombsite) => (
-              <button
-                type="button"
-                key={site.code}
-                onClick={() => handleLayerChange(site.layer)}
-                class="w-full p-2 bg-gray-700 hover:bg-gray-600 rounded text-sm text-left transition-colors"
-              >
-                <div class="font-medium">{site.name}</div>
-                <div class="text-gray-400 text-xs">
-                  {layers[site.layer]} floor
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
+        {/* Bombsite Selection */}
+        <BombsitePicker
+          bombsites={bombsites}
+          selectedBombsite={selectedBombsite.value}
+          onBombsiteSelect={handleBombsiteSelect}
+          layers={layers}
+        />
 
         {/* Layer Controls */}
         <div class="p-4 flex-1">
@@ -395,7 +383,7 @@ export default function MapInterface(props: MapInterfaceProps) {
         <StratPlanner
           map={map}
           layers={layers}
-          side={side}
+          side={currentSide.value}
           onLayerChange={handleLayerChange}
           currentLayerIndex={currentLayerIndex.value}
           selectedPlayer={selectedPlayer.value}
@@ -409,7 +397,9 @@ export default function MapInterface(props: MapInterfaceProps) {
           <div class="bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 max-h-96 overflow-y-auto">
             <h3 class="text-lg font-semibold mb-4">Select Operator</h3>
             <div class="grid grid-cols-2 gap-2">
-              {OPERATORS[side as keyof typeof OPERATORS].map((op) => (
+              {OPERATORS[currentSide.value as keyof typeof OPERATORS].map((
+                op,
+              ) => (
                 <button
                   type="button"
                   key={op}

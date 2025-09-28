@@ -1,3 +1,5 @@
+/** @jsxImportSource preact */
+
 export interface ButtonProps {
   id?: string;
   onClick?: () => void;
