@@ -2,7 +2,6 @@ import { define } from "../../utils.ts";
 
 import maps from "../../static/maps/info.json" with { type: "json" };
 
-import SidePicker from "../../islands/SidePicker.tsx";
 import StratPlanner from "../../islands/StratPlanner.tsx";
 
 export const handler = define.handlers({
@@ -25,8 +24,6 @@ export const handler = define.handlers({
 
       const { layers, bombsites } = await content.json();
 
-      console.log("AAAAAA");
-
       return { data: { name: map, layers, bombsites } };
     } catch (error) {
       console.error(error);
@@ -36,25 +33,14 @@ export const handler = define.handlers({
 });
 
 export default define.page<typeof handler>((props) => {
-  const map = props.data.name;
-  const layers = props.data.layers;
-
-  const someLayer = layers[0];
-
+  const { name, layers, bombsites } = props.data;
+  
   return (
     <main>
-      <h1>{map}</h1>
-      <SidePicker />
-      <div>
-        {layers.map((layer: string) => (
-          <a key={layer} href={`/map/${map}/${layer}`}>
-            {layer}
-          </a>
-        ))}
-      </div>
-      <StratPlanner map={map} layers={layers}/>
-      <div id="maps-container">
-      </div>
+      <a href="/maps">
+        <h1>{name}</h1>
+      </a>
+      <StratPlanner map={name} layers={layers} bombsites={bombsites}/>
     </main>
   );
 });

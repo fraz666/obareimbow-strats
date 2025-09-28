@@ -4,7 +4,7 @@ import { define } from "../utils.ts";
 import Counter from "../islands/Counter.tsx";
 
 export default define.page(function Home(ctx) {
-  const count = useSignal(3);
+  const count = useSignal(3) //{ current: 3, step: 1});
 
   console.log("Shared value " + ctx.state.shared);
 
@@ -14,18 +14,12 @@ export default define.page(function Home(ctx) {
         <title>Fresh counter</title>
       </Head>
       <div class="max-w-screen-md mx-auto flex flex-col items-center justify-center">
-        <img
-          class="my-6"
-          src="/logo.svg"
-          width="128"
-          height="128"
-          alt="the Fresh logo: a sliced lemon dripping with juice"
-        />
         <h1 class="text-4xl font-bold">Welcome to Fresh</h1>
         <p class="my-4">
           Try updating this message in the
           <code class="mx-2">./routes/index.tsx</code> file, and refresh.
         </p>
+        <h2>{count.value}</h2>
         <Counter count={count} />
       </div>
     </div>

@@ -4,7 +4,6 @@ export default function SidePicker() {
   const currentSide = useSignal("atk");
 
   const handleSideChange = (side: string) => {
-    console.log(side);
     currentSide.value = side;
 
     const newParams = new URLSearchParams({ side });

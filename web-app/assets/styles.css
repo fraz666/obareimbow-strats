@@ -56,6 +56,11 @@ div#strat-planner {
   position: relative;
 }
 
+button.selected {
+  background-color: #2563eb;
+  color: white;
+}
+
 canvas#strat-planner-canvas {
   position: absolute;
   width: 100%; 
