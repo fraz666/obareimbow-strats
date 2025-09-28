@@ -164,12 +164,62 @@ a.map-card-link {
 .text-orange-400 { color: #fb923c; }
 .hover\:text-orange-400:hover { color: #fb923c; }
 
-div#strat-planner {
+.strat-planner-container {
   position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #1f2937;
 }
 
-canvas#strat-planner-canvas {
-  position: absolute;
-  width: 100%; 
-  height: 100%;
+.map-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
 }
+
+.drawing-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+  pointer-events: auto;
+}
+
+.w-80 { width: 20rem; }
+.h-screen { height: 100vh; }
+.space-y-1 > * + * { margin-top: 0.25rem; }
+.space-y-2 > * + * { margin-top: 0.5rem; }
+.border-r { border-right-width: 1px; }
+.border-b { border-bottom-width: 1px; }
+.border-gray-700 { border-color: #374151; }
+.flex-col { flex-direction: column; }
+.flex-1 { flex: 1 1 0%; }
+.z-10 { z-index: 10; }
+
+.bg-blue-600 { background-color: #2563eb; }
+.bg-blue-700 { background-color: #1d4ed8; }
+.bg-red-600 { background-color: #dc2626; }
+.bg-red-700 { background-color: #b91c1c; }
+.bg-yellow-600 { background-color: #ca8a04; }
+.bg-yellow-700 { background-color: #a16207; }
+.bg-gray-600 { background-color: #4b5563; }
+
+.hover\:bg-blue-700:hover { background-color: #1d4ed8; }
+.hover\:bg-red-700:hover { background-color: #b91c1c; }
+.hover\:bg-yellow-700:hover { background-color: #a16207; }
+.hover\:bg-gray-600:hover { background-color: #4b5563; }
+
+.text-blue-400 { color: #60a5fa; }
+.text-xs { font-size: 0.75rem; }
+
+.bg-opacity-50 { background-opacity: 0.5; }
+.bg-opacity-75 { background-opacity: 0.75; }
+.hover\:bg-opacity-75:hover { background-opacity: 0.75; }
+
+.text-left { text-align: left; }
