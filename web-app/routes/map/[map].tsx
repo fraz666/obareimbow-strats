@@ -3,7 +3,7 @@ import { define } from "../../utils.ts";
 
 import maps from "../../static/maps/info.json" with { type: "json" };
 
-import MapInterface from "../../islands/MapInterface.tsx";
+import StratPlanner from "../../islands/StratPlanner.tsx";
 
 export const handler = define.handlers({
   async GET(ctx) {
@@ -24,7 +24,7 @@ export const handler = define.handlers({
       const content = await fetch(mapInfoUrl);
       const { layers, bombsites } = await content.json();
 
-      return { data: { name: map, layers, bombsites, side } };
+      return { data: { name: map, layers, bombsites } };
     } catch (error) {
       console.error(error);
       return new Response("Internal server error", { status: 500 });
@@ -33,22 +33,14 @@ export const handler = define.handlers({
 });
 
 export default define.page<typeof handler>((props) => {
-  const { name: map, layers, bombsites, side } = props.data;
-
+  const { name, layers, bombsites } = props.data;
+  
   return (
-    <div class="min-h-screen bg-gray-900 text-white">
-      <Head>
-        <title>
-          {map.charAt(0).toUpperCase() + map.slice(1)} - Strategy Planner
-        </title>
-      </Head>
-
-      <MapInterface
-        map={map}
-        layers={layers}
-        bombsites={bombsites}
-        side={side}
-      />
-    </div>
+    <main>
+      <a href="/maps">
+        <h1>{name}</h1>
+      </a>
+      <StratPlanner map={name} layers={layers} bombsites={bombsites}/>
+    </main>
   );
 });
