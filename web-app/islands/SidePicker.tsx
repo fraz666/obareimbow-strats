@@ -1,5 +1,3 @@
-/** @jsxImportSource preact */
-
 interface SidePickerProps {
   currentSide: string;
   onSideChange: (side: string) => void;

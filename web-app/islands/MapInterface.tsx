@@ -1,5 +1,3 @@
-/** @jsxImportSource preact */
-
 import { useSignal } from "@preact/signals";
 import StratPlanner from "./StratPlanner.tsx";
 import BombsitePicker from "./BombsitePicker.tsx";
