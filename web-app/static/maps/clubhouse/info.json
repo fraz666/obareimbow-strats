@@ -1,13 +1,13 @@
 {
-    "layers": [
-        "2nd-floor",
-        "ground",
-        "basement"
-    ],
-    "bombsites": [
-        "Gym and Bedroom",
-        "CCTV Room and Cash Room",
-        "Bar and Stage",
-        "Church and Arsenal Room"
-    ]
+  "layers": [
+    "2nd-floor",
+    "ground",
+    "basement"
+  ],
+  "bombsites": [
+    "Gym and Bedroom",
+    "CCTV Room and Cash Room",
+    "Bar and Stage",
+    "Church and Arsenal Room"
+  ]
 }
