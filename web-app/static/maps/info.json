@@ -1,4 +1,4 @@
 [
-  "bank",
-  "clubhouse"
+  { "code": "bank", "name": "Bank" },
+  { "code": "clubhouse", "name": "Clubhouse" }
 ]

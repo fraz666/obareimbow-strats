@@ -1,5 +1,3 @@
-/** @jsxImportSource preact */
-
 interface Bombsite {
   name: string;
   code: string;

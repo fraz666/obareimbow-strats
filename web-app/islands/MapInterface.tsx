@@ -10,7 +10,7 @@ interface Bombsite {
 }
 
 interface MapInterfaceProps {
-  map: string;
+  map: {code: string, name: string};
   layers: string[];
   bombsites: Bombsite[];
   side: string;
@@ -258,7 +258,7 @@ export default function MapInterface(props: MapInterfaceProps) {
     const strategy: SavedStrategy = {
       id: Date.now().toString(),
       name: strategyName.value.trim(),
-      map: map,
+      map: map.code,
       side: currentSide.value,
       bombsite: selectedBombsite.value?.name || "",
       players: [...players.value],
@@ -412,7 +412,7 @@ export default function MapInterface(props: MapInterfaceProps) {
         <SidePicker
           currentSide={currentSide.value}
           onSideChange={handleSideChange}
-          map={map}
+          map={map.code}
         />
 
         {/* Player Slots */}
@@ -618,7 +618,7 @@ export default function MapInterface(props: MapInterfaceProps) {
       {/* Main Map Area */}
       <div class="flex-1 relative overflow-hidden">
         <StratPlanner
-          map={map}
+          map={map.code}
           layers={layers}
           side={currentSide.value}
           onLayerChange={handleLayerChange}
@@ -735,7 +735,7 @@ export default function MapInterface(props: MapInterfaceProps) {
               : (
                 <div class="space-y-2 mb-4">
                   {savedStrategies.value
-                    .filter((s) => s.map === map)
+                    .filter((s) => s.map === map.code)
                     .map((strategy) => (
                       <div
                         key={strategy.id}

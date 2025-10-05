@@ -1,0 +1,13 @@
+#tmp {
+    color:aliceblue;
+}
+
+/* Map */
+/* Header */
+#header__title:hover span {
+    display: none;
+}
+
+#header__title:hover:before {
+    content: "Go back";
+}

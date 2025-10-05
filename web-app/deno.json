@@ -22,12 +22,13 @@
     "**/_fresh/*"
   ],
   "imports": {
+    "@std/http": "jsr:@std/http@^1.0.20",
     "fresh": "jsr:@fresh/core@^2.1.1",
     "fresh/runtime": "jsr:@fresh/core@^2.1.1/runtime",
     "preact": "npm:preact@^10.27.2",
-    "@preact/signals": "npm:@preact/signals@^2.3.1",
+    "@preact/signals": "npm:@preact/signals@^2.3.2",
     "@fresh/plugin-vite": "jsr:@fresh/plugin-vite@^1.0.4",
-    "vite": "npm:vite@^7.1.7"
+    "vite": "npm:vite@^7.1.9"
   },
   "compilerOptions": {
     "lib": [
