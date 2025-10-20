@@ -18,7 +18,11 @@ export default define.page(() => {
         <div id="maps-container" class="grid md:grid-cols-2 gap-6">
           {(maps as any[])
             .map((m) => (
-              <a key={m.code} class="map-card-link group" href={`/map/${m.code}`}>
+              <a
+                key={m.code}
+                class="map-card-link group"
+                href={`/map/${m.code}`}
+              >
                 <div class="relative overflow-hidden rounded-lg bg-gray-800">
                   <img
                     src={`/maps/${m.code}/preview.avif`}

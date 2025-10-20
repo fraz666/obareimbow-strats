@@ -9,34 +9,22 @@
   },
   "lint": {
     "rules": {
-      "tags": [
-        "fresh",
-        "recommended"
-      ],
-      "exclude": [
-        "no-explicit-any"
-      ]
+      "tags": ["fresh", "recommended"],
+      "exclude": ["no-explicit-any"]
     }
   },
-  "exclude": [
-    "**/_fresh/*"
-  ],
+  "exclude": ["**/_fresh/*"],
   "imports": {
-    "@std/http": "jsr:@std/http@^1.0.20",
-    "fresh": "jsr:@fresh/core@^2.1.1",
-    "fresh/runtime": "jsr:@fresh/core@^2.1.1/runtime",
+    "@std/http": "jsr:@std/http@^1.0.21",
+    "fresh": "jsr:@fresh/core@^2.1.2",
+    "fresh/runtime": "jsr:@fresh/core@^2.1.2/runtime",
     "preact": "npm:preact@^10.27.2",
     "@preact/signals": "npm:@preact/signals@^2.3.2",
-    "@fresh/plugin-vite": "jsr:@fresh/plugin-vite@^1.0.4",
-    "vite": "npm:vite@^7.1.9"
+    "@fresh/plugin-vite": "jsr:@fresh/plugin-vite@^1.0.5",
+    "vite": "npm:vite@^7.1.10"
   },
   "compilerOptions": {
-    "lib": [
-      "dom",
-      "dom.asynciterable",
-      "dom.iterable",
-      "deno.ns"
-    ],
+    "lib": ["dom", "dom.asynciterable", "dom.iterable", "deno.ns"],
     "jsx": "react-jsx",
     "jsxImportSource": "preact",
     "jsxPrecompileSkipElements": [
@@ -55,9 +43,7 @@
       "noscript",
       "template"
     ],
-    "types": [
-      "vite/client"
-    ],
+    "types": ["vite/client"],
     "skipLibCheck": true
   }
 }

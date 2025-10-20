@@ -239,10 +239,6 @@ a.map-card-link {
   transform: scale(1.05);
 }
 
-.group:hover .group-hover\:bg-opacity-20 {
-  background-opacity: 0.2;
-}
-
 .md\:grid-cols-2 {
   grid-template-columns: repeat(2, 1fr);
 }
@@ -458,18 +454,6 @@ button.selected {
 
 .text-xs {
   font-size: 0.75rem;
-}
-
-.bg-opacity-50 {
-  background-opacity: 0.5;
-}
-
-.bg-opacity-75 {
-  background-opacity: 0.75;
-}
-
-.hover\:bg-opacity-75:hover {
-  background-opacity: 0.75;
 }
 
 .text-left {

@@ -8,9 +8,10 @@ export const handler = define.handlers({
     const type = form.get("type")?.toString() as UserType;
     const passphrase = form.get("passphrase")?.toString();
 
-    if (!passphrase 
-      || (passphrase !== Deno.env.get("ADMIN_PASSPHRASE") && type === "admin")
-      || (passphrase !== Deno.env.get("VIEWER_PASSPHRASE") && type === "viewer")
+    if (
+      !passphrase ||
+      (passphrase !== Deno.env.get("ADMIN_PASSPHRASE") && type === "admin") ||
+      (passphrase !== Deno.env.get("VIEWER_PASSPHRASE") && type === "viewer")
     ) {
       return new Response("forbidden", { status: 403 });
     }
