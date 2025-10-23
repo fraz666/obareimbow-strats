@@ -6,7 +6,7 @@ interface BombsitePickerProps {
   onBombsiteChange: (b: Bombsite) => void;
 }
 
-export default function BombsitePicker(props: BombsitePickerProps) {
+export function BombsitePicker(props: BombsitePickerProps) {
   const { currentBombsite, availableBombsites, onBombsiteChange } = props;
 
   return (

@@ -5,7 +5,7 @@ interface SidePickerProps {
   onSideChange: (side: Side) => void;
 }
 
-export default function SidePicker(props: SidePickerProps) {
+export function SidePicker(props: SidePickerProps) {
   const { currentSide, onSideChange } = props;
 
   return (

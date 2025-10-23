@@ -57,3 +57,9 @@
   flex-direction: column;
   gap: 0.5rem;
 }
+
+.strats-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
