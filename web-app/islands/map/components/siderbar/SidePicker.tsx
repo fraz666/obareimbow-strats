@@ -1,4 +1,4 @@
-import { Side } from "../../domain/models/side.ts";
+import { Side } from "../../../../domain/models/side.ts";
 
 interface SidePickerProps {
   currentSide: Side;

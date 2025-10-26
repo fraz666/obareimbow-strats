@@ -6,7 +6,7 @@ import maps from "../../static/maps/info.json" with { type: "json" };
 import { getCookies } from "@std/http/cookie";
 import { Side } from "../../domain/models/side.ts";
 import { MapWithStrats } from "../../islands/map/MapWithStrats.tsx";
-import { Header } from "../../islands/map/Header.tsx";
+import { Header } from "../../islands/map/components/siderbar/Header.tsx";
 
 export const handler = define.handlers({
   async GET(ctx) {

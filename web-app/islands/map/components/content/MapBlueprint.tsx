@@ -25,6 +25,7 @@ export function MapBlueprint(props: MapBlueprintProps) {
 
   return (
     <img
+      id="map-blueprint"
       src={`/maps/${mapCode}/${currentLayer}.jpg`}
       alt={`${mapCode} ${currentLayer}`}
       class="map-image"

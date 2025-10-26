@@ -1,4 +1,4 @@
-import { Bombsite } from "../../domain/models/bombsite.ts";
+import { Bombsite } from "../../../../domain/models/bombsite.ts";
 
 interface BombsitePickerProps {
   currentBombsite: Bombsite;

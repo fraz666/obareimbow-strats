@@ -349,16 +349,6 @@ a.map-card-link {
   display: block;
 }
 
-.drawing-canvas {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  cursor: crosshair;
-  pointer-events: auto;
-}
-
 button.selected {
   background-color: #2563eb;
   color: white;
@@ -582,4 +572,12 @@ button.selected {
 
 .gap-2 {
   gap: 0.5rem;
+}
+
+.p-2 {
+  padding: 0.5rem;
+}
+
+.w-100 {
+  width: 100%;
 }
