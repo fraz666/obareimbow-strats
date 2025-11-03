@@ -4,6 +4,10 @@ import { exists } from "jsr:@std/fs/exists";
 
 export const handler = define.handlers({
   async GET(ctx: any) {
+    if (!ctx.state.isLoggedIn) {
+      return new Response("Unauthorized", { status: 401 });
+    }
+
     const params = new URLSearchParams(ctx.url.search);
     const map = params.get("map");
     const side = params.get("side");
@@ -65,13 +69,5 @@ export const handler = define.handlers({
     );
 
     return Response.json(strats);
-
-    // const req = await ctx.req.json();
-    // console.log("SAVE", req);
-    // // await Deno.writeTextFile(
-    // //   `${Deno.cwd()}/static/lines.log`,
-    // //   JSON.stringify(req.lines),
-    // // );
-    // return new Response("ok", { status: 200 });
   },
 });

@@ -8,10 +8,9 @@ app.use(staticFiles());
 
 // Pass a shared value from a middleware
 app.use(async (ctx) => {
-  ctx.state.shared = "hello";
-
   const cookies = getCookies(ctx.req.headers);
   cookies.auth &&= atob(cookies.auth);
+  ctx.state.isLoggedIn = cookies.auth != null;
   ctx.state.isAdmin = cookies.auth === "admin";
 
   return await ctx.next();

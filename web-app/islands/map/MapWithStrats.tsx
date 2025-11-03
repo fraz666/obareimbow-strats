@@ -14,14 +14,18 @@ export interface MapWithStratsProps {
   map: any;
   layers: string[];
   bombsites: Bombsite[];
-  side: Side;
+  currentSide: Side;
+  currentBombsite: string | null;
+  currentStrat: string | null;
 }
 
 export function MapWithStrats(props: { configuration: MapWithStratsProps }) {
-  const { map, layers, bombsites, side } = props.configuration;
+  const { map, layers, bombsites, currentSide: side, currentBombsite: bombsiteCode, currentStrat: stratCode } = props.configuration;
 
   const currentSide = useSignal(side);
-  const currentBombsite = useSignal<Bombsite>(bombsites[0]);
+
+  const bombsite = bombsites.find((b) => b.code === bombsiteCode) ?? bombsites[0];
+  const currentBombsite = useSignal<Bombsite>(bombsite);
 
   const currentLayer = useSignal<string>(layers[currentBombsite.value.layer]);
 
@@ -53,7 +57,15 @@ export function MapWithStrats(props: { configuration: MapWithStratsProps }) {
     const strats = await res.json() as Strategy[];
     console.log("Fetched strats:", strats);
     availableStrats.value = strats ?? [];
-    currentStrat.value = availableStrats.value[0] ?? null;
+    if (availableStrats.value.length > 0) {
+      const requestedStrat = availableStrats.value.find((s) => s.code === stratCode)
+      if (requestedStrat) {
+        currentStrat.value = requestedStrat;
+      }
+      else {
+        currentStrat.value = availableStrats.value[0];
+      }
+    }
 
     updateURLParams();
   };

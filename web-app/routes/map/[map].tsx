@@ -6,7 +6,6 @@ import maps from "../../static/maps/info.json" with { type: "json" };
 import { getCookies } from "@std/http/cookie";
 import { Side } from "../../domain/models/side.ts";
 import { MapWithStrats } from "../../islands/map/MapWithStrats.tsx";
-import { Header } from "../../islands/map/components/siderbar/Header.tsx";
 
 export const handler = define.handlers({
   async GET(ctx) {
@@ -22,9 +21,11 @@ export const handler = define.handlers({
 
     const mapCode = ctx.params.map;
     const url = new URL(ctx.req.url);
-    const side = (url.searchParams.get("side") || "atk") as Side;
+    const currentSide = (url.searchParams.get("side") || "atk") as Side;
+    const currentBombsite = url.searchParams.get("bombsite");
+    const currentStrat = url.searchParams.get("strat");
 
-    console.log(`Is admin?: ${ctx.state.isAdmin}`);
+    // console.log(`Is admin?: ${ctx.state.isAdmin}`);
 
     if (!mapCode) {
       return new Response("Missing map parameter", { status: 400 });
@@ -40,7 +41,7 @@ export const handler = define.handlers({
       const content = await fetch(mapInfoUrl);
       const { layers, bombsites } = await content.json();
 
-      return { data: { map, layers, bombsites, side } };
+      return { data: { map, layers, bombsites, currentSide, currentBombsite, currentStrat } };
     } catch (error) {
       console.error(error);
       return new Response("Internal server error", { status: 500 });
