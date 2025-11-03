@@ -11,6 +11,7 @@ import { MapDraweArea } from "./components/content/MapDrawArea.tsx";
 import { Strategy } from "../../domain/models/strategy.ts";
 
 export interface MapWithStratsProps {
+  isAdmin: boolean;
   map: any;
   layers: string[];
   bombsites: Bombsite[];
@@ -20,7 +21,7 @@ export interface MapWithStratsProps {
 }
 
 export function MapWithStrats(props: { configuration: MapWithStratsProps }) {
-  const { map, layers, bombsites, currentSide: side, currentBombsite: bombsiteCode, currentStrat: stratCode } = props.configuration;
+  const { isAdmin, map, layers, bombsites, currentSide: side, currentBombsite: bombsiteCode, currentStrat: stratCode } = props.configuration;
 
   const currentSide = useSignal(side);
 
@@ -160,6 +161,7 @@ export function MapWithStrats(props: { configuration: MapWithStratsProps }) {
             onBombsiteChange={onBombsiteChange}
           />
           <StratManager
+            isAdmin={isAdmin}
             currentStrat={currentStrat.value?.code ?? null}
             availableStrats={availableStrats.value.map((s) => s.code)}
             onStratChange={onStratChange}

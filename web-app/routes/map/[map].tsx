@@ -41,7 +41,7 @@ export const handler = define.handlers({
       const content = await fetch(mapInfoUrl);
       const { layers, bombsites } = await content.json();
 
-      return { data: { map, layers, bombsites, currentSide, currentBombsite, currentStrat } };
+      return { data: { isAdmin: ctx.state.isAdmin, map, layers, bombsites, currentSide, currentBombsite, currentStrat } };
     } catch (error) {
       console.error(error);
       return new Response("Internal server error", { status: 500 });
