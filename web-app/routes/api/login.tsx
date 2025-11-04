@@ -13,7 +13,12 @@ export const handler = define.handlers({
       (passphrase !== Deno.env.get("ADMIN_PASSPHRASE") && type === "admin") ||
       (passphrase !== Deno.env.get("VIEWER_PASSPHRASE") && type === "viewer")
     ) {
-      return new Response("forbidden", { status: 403 });
+      const headers = new Headers();
+      headers.set("location", "/");
+      return new Response(null, {
+        status: 303, // See Other
+        headers,
+      });
     }
 
     const headers = new Headers();
