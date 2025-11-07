@@ -21,11 +21,20 @@ export interface MapWithStratsProps {
 }
 
 export function MapWithStrats(props: { configuration: MapWithStratsProps }) {
-  const { isAdmin, map, layers, bombsites, currentSide: side, currentBombsite: bombsiteCode, currentStrat: stratCode } = props.configuration;
+  const {
+    isAdmin,
+    map,
+    layers,
+    bombsites,
+    currentSide: side,
+    currentBombsite: bombsiteCode,
+    currentStrat: stratCode,
+  } = props.configuration;
 
   const currentSide = useSignal(side);
 
-  const bombsite = bombsites.find((b) => b.code === bombsiteCode) ?? bombsites[0];
+  const bombsite = bombsites.find((b) => b.code === bombsiteCode) ??
+    bombsites[0];
   const currentBombsite = useSignal<Bombsite>(bombsite);
 
   const currentLayer = useSignal<string>(layers[currentBombsite.value.layer]);
@@ -56,14 +65,14 @@ export function MapWithStrats(props: { configuration: MapWithStratsProps }) {
       `/api/strat?map=${map.code}&side=${currentSide.value}&bombsite=${currentBombsite.value.code}`,
     );
     const strats = await res.json() as Strategy[];
-    console.log("Fetched strats:", strats);
     availableStrats.value = strats ?? [];
     if (availableStrats.value.length > 0) {
-      const requestedStrat = availableStrats.value.find((s) => s.code === stratCode)
+      const requestedStrat = availableStrats.value.find((s) =>
+        s.code === stratCode
+      );
       if (requestedStrat) {
         currentStrat.value = requestedStrat;
-      }
-      else {
+      } else {
         currentStrat.value = availableStrats.value[0];
       }
     }
@@ -72,14 +81,20 @@ export function MapWithStrats(props: { configuration: MapWithStratsProps }) {
   };
 
   const onSideChange = (newSide: Side) => {
-    currentSide.value = newSide;
-    updateURLParams();
+    if (newSide != currentSide.value) {
+      currentSide.value = newSide;
+      currentStrat.value = null;
+      updateURLParams();
+    }
   };
 
   const onBombsiteChange = (newBombsite: Bombsite) => {
-    currentBombsite.value = newBombsite;
-    currentLayer.value = layers[newBombsite.layer];
-    updateURLParams();
+    if (newBombsite.code !== currentBombsite.value.code) {
+      currentBombsite.value = newBombsite;
+      currentLayer.value = layers[newBombsite.layer];
+      currentStrat.value = null;
+      updateURLParams();
+    }
   };
 
   const onStratChange = (newStrat: string) => {
@@ -105,6 +120,7 @@ export function MapWithStrats(props: { configuration: MapWithStratsProps }) {
   };
 
   const onStratSave = async (s: string) => {
+    // TODO: show spinner
     const strat = availableStrats.value.find((st) => st.code === s);
     if (!strat) return;
 
@@ -124,12 +140,32 @@ export function MapWithStrats(props: { configuration: MapWithStratsProps }) {
     } else {
       console.error("Error saving strat:", await res.text());
     }
-
-    console.log("Save strat:", s);
   };
 
-  const onStratDelete = (s: string) => {
-    console.log("Dele strat:", s);
+  const onStratDelete = async (s: string) => {
+    // TODO: show spinner
+    const idx = availableStrats.value.findIndex((st) => st.code === s);
+    if (idx === -1) return;
+
+    const strat = availableStrats.value.splice(idx, 1)[0];
+    availableStrats.value = [...availableStrats.value];
+
+    const res = await fetch(
+      `/api/strat?map=${map.code}&side=${currentSide.value}&bombsite=${currentBombsite.value.code}`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(strat),
+      },
+    );
+
+    if (res.ok) {
+      console.log("Strat deleted successfully");
+    } else {
+      console.error("Error deleting strat:", await res.text());
+    }
   };
 
   const onLayerIncrease = () => {

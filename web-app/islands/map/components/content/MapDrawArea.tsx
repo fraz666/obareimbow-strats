@@ -53,6 +53,7 @@ export function MapDraweArea(props: MapDraweAreaProps) {
       } else {
         canvas.style.cursor = "default";
       }
+      redrawCanvas();
     }
   };
 
@@ -78,7 +79,7 @@ export function MapDraweArea(props: MapDraweAreaProps) {
       ctx.lineJoin = "round";
 
       // Set opacity based on whether this player is selected
-      ctx.strokeStyle = "#00ff00" + "60";
+      ctx.strokeStyle = "#00ff00" + "dd";
 
       ctx.moveTo(strokePoints[0].x, strokePoints[0].y);
       for (let i = 1; i < strokePoints.length; i++) {

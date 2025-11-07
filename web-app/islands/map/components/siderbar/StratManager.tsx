@@ -48,6 +48,7 @@ export function StratManager(props: StratManagerProps) {
                     class="w-100 text-center bg-gray-700 text-gray-300 hover:bg-gray-600 focus:outline-none"
                     value={currentStrat}
                     onInput={(e) => stratName.value = e.currentTarget.value}
+                    readOnly
                   />
                   <button
                     type="button"
@@ -56,15 +57,13 @@ export function StratManager(props: StratManagerProps) {
                   >
                     Save
                   </button>
-                  {
-                    /* <button
-                  type="button"
-                  class="bg-gray-700 text-gray-300 hover:bg-gray-600"
-                  onClick={() => onStratDelete(strat)}
-                >
-                  Delete
-                </button> */
-                  }
+                  <button
+                    type="button"
+                    class="bg-gray-700 text-gray-300 hover:bg-gray-600 ml-2"
+                    onClick={() => onStratDelete(stratName.value)}
+                  >
+                    Delete
+                  </button>
                 </div>
               );
             } else {
