@@ -1,0 +1,30 @@
+{
+  "layers": [
+    "basement",
+    "1st-floor",
+    "2nd-floor",
+    "roof"
+  ],
+  "bombsites": [
+    {
+      "name": "Master Bedroom and Office",
+      "code": "bedroom-office",
+      "layer": 2
+    },
+    {
+      "name": "Wine Cellar and Snowmobile Garage",
+      "code": "winecellar-garage",
+      "layer": 0
+    },
+    {
+      "name": "Bar and Gaming Room",
+      "code": "bar-gaming",
+      "layer": 1
+    },
+    {
+      "name": "Dining Room and Kitchen",
+      "code": "dining-kitchen",
+      "layer": 1
+    }
+  ]
+}

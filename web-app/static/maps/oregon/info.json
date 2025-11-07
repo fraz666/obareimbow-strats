@@ -1,0 +1,31 @@
+{
+  "layers": [
+    "basement",
+    "ground",
+    "1st-floor",
+    "2nd-floor",
+    "roof"
+  ],
+  "bombsites": [
+    {
+      "name": "Dorms Hall and Kids Dormitory",
+      "code": "dorms-kids",
+      "layer": 2
+    },
+    {
+      "name": "Laundry Room and Supply Room",
+      "code": "laundry-supply",
+      "layer": 0
+    },
+    {
+      "name": "Dining Hall and Kitchen",
+      "code": "dining-kitchen",
+      "layer": 1
+    },
+    {
+      "name": "Meeting Hall and Kitchen",
+      "code": "meeting-kitchen",
+      "layer": 1
+    }
+  ]
+}

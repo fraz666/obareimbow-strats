@@ -1,4 +1,7 @@
 [
   { "code": "bank", "name": "Bank" },
-  { "code": "clubhouse", "name": "Clubhouse" }
+  { "code": "clubhouse", "name": "Clubhouse" },
+  { "code": "chalet", "name": "Chalet" },
+  { "code": "oregon", "name": "Oregon" },
+  { "code": "villa", "name": "Villa" }
 ]

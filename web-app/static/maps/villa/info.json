@@ -1,0 +1,30 @@
+{
+  "layers": [
+    "basement",
+    "ground",
+    "2nd-floor",
+    "roof"
+  ],
+  "bombsites": [
+    {
+      "name": "Gym and Bedroom",
+      "code": "gym-bedroom",
+      "layer": 2
+    },
+    {
+      "name": "CCTV Room and Cash Room",
+      "code": "cctv-cashroom",
+      "layer": 2
+    },
+    {
+      "name": "Bar and Stage",
+      "code": "bar-stage",
+      "layer": 1
+    },
+    {
+      "name": "Church and Arsenal Room",
+      "code": "church-arsenal",
+      "layer": 0
+    }
+  ]
+}
