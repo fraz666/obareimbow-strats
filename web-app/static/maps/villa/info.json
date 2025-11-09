@@ -1,0 +1,29 @@
+{
+  "layers": [
+    "basement",
+    "1st-floor",
+    "2nd-floor"
+  ],
+  "bombsites": [
+    {
+      "name": "Games Room and Aviator Room",
+      "code": "games-aviator",
+      "layer": 2
+    },
+    {
+      "name": "Trophy Room and Statue Room",
+      "code": "trophy-statue",
+      "layer": 2
+    },
+    {
+      "name": "Kitchen and Dining Room",
+      "code": "kitchen-dining",
+      "layer": 1
+    },
+    {
+      "name": "Library and Lounge",
+      "code": "library-lounge",
+      "layer": 1
+    }
+  ]
+}

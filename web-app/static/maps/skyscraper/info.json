@@ -1,0 +1,29 @@
+{
+  "layers": [
+    "1st-floor",
+    "2nd-floor",
+    "roof"
+  ],
+  "bombsites": [
+    {
+      "name": "Tea Room and Karaoke",
+      "code": "tea-karaoke",
+      "layer": 1
+    },
+    {
+      "name": "Exhibition Room and Office",
+      "code": "exhibition-office",
+      "layer": 1
+    },
+    {
+      "name": "Kitchen and BBQ",
+      "code": "kitchen-bbq",
+      "layer": 0
+    },
+    {
+      "name": "Bedroom and Bathroom",
+      "code": "bedroom-bathroom",
+      "layer": 0
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "layers": [
+    "1st-floor",
+    "2nd-floor",
+    "roof"
+  ],
+  "bombsites": [
+    {
+      "name": "Office and Initiation Room",
+      "code": "office-initiation",
+      "layer": 1
+    },
+    {
+      "name": "Bunk and Day Care",
+      "code": "bunk-daycare",
+      "layer": 1
+    },
+    {
+      "name": "Armory and Throne Room",
+      "code": "armory-throne",
+      "layer": 0
+    },
+    {
+      "name": "Lab and Storage",
+      "code": "lab-storage",
+      "layer": 0
+    }
+  ]
+}

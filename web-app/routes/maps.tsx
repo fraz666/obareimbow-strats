@@ -12,37 +12,29 @@ export default define.page(() => {
 
       <main class="container mx-auto px-4 py-8">
         <div class="mb-8">
-          <a
-            href="/"
-            class="text-orange-500 hover:text-orange-400 mb-4 inline-block"
-          >
-            ← Back to Home
-          </a>
-          <h1 class="text-4xl font-bold mb-4">Available Maps</h1>
-          <p class="text-gray-300">
-            Choose a map to start planning your strategies
-          </p>
+          <h1 class="text-4xl font-bold mb-4">Available maps</h1>
         </div>
 
         <div id="maps-container" class="grid md:grid-cols-2 gap-6">
-          {(maps as string[])
+          {(maps as any[])
             .map((m) => (
-              <a key={m} class="map-card-link group" href={`/map/${m}`}>
+              <a
+                key={m.code}
+                class="map-card-link group"
+                href={`/map/${m.code}`}
+              >
                 <div class="relative overflow-hidden rounded-lg bg-gray-800">
                   <img
-                    src={`/maps/${m}/preview.avif`}
-                    alt={m}
+                    src={`/maps/${m.code}/preview.avif`}
+                    alt={m.name}
                     class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                   <div class="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-20 transition-all duration-300">
                   </div>
                   <div class="absolute bottom-0 left-0 right-0 p-4">
                     <h3 class="text-xl font-semibold capitalize text-white">
-                      {m}
+                      {m.name}
                     </h3>
-                    <p class="text-gray-300 text-sm">
-                      Click to start planning
-                    </p>
                   </div>
                 </div>
               </a>

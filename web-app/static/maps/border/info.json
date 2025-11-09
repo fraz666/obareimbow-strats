@@ -1,0 +1,29 @@
+{
+  "layers": [
+    "1st-floor",
+    "2nd-floor",
+    "roof"
+  ],
+  "bombsites": [
+    {
+      "name": "Armory Lockers and Archives",
+      "code": "armory-archives",
+      "layer": 1
+    },
+    {
+      "name": "Workshop and Ventilation Room",
+      "code": "workshop-ventilation",
+      "layer": 0
+    },
+    {
+      "name": "Customs Inspection and Supply Room",
+      "code": "inspection-supply",
+      "layer": 0
+    },
+    {
+      "name": "Tellers and Bathroom",
+      "code": "tellers-bathroom",
+      "layer": 0
+    }
+  ]
+}

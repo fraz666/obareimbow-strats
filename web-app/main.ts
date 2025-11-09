@@ -1,5 +1,6 @@
 import { App, staticFiles } from "fresh";
 import { define, type State } from "./utils.ts";
+import { getCookies } from "@std/http/cookie";
 
 export const app = new App<State>();
 
@@ -7,7 +8,11 @@ app.use(staticFiles());
 
 // Pass a shared value from a middleware
 app.use(async (ctx) => {
-  ctx.state.shared = "hello";
+  const cookies = getCookies(ctx.req.headers);
+  cookies.auth &&= atob(cookies.auth);
+  ctx.state.isLoggedIn = cookies.auth != null;
+  ctx.state.isAdmin = cookies.auth === "admin";
+
   return await ctx.next();
 });
 

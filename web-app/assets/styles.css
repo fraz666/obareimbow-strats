@@ -1,3 +1,5 @@
+@import url("design-system.css");
+
 *,
 *::before,
 *::after {
@@ -6,6 +8,11 @@
 
 * {
   margin: 0;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
 }
 
 img,
@@ -232,10 +239,6 @@ a.map-card-link {
   transform: scale(1.05);
 }
 
-.group:hover .group-hover\:bg-opacity-20 {
-  background-opacity: 0.2;
-}
-
 .md\:grid-cols-2 {
   grid-template-columns: repeat(2, 1fr);
 }
@@ -289,16 +292,12 @@ a.map-card-link {
   height: 12rem;
 }
 
-.bg-black {
-  background-color: #000000;
-}
-
 .bg-opacity-40 {
-  background-opacity: 0.4;
+  background-color: rgb(0,0,0,0.4);
 }
 
 .bg-opacity-20 {
-  background-opacity: 0.2;
+  background-color: rgb(0,0,0,0.2);
 }
 
 .capitalize {
@@ -348,16 +347,6 @@ a.map-card-link {
   max-height: 100%;
   object-fit: contain;
   display: block;
-}
-
-.drawing-canvas {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  cursor: crosshair;
-  pointer-events: auto;
 }
 
 button.selected {
@@ -455,18 +444,6 @@ button.selected {
 
 .text-xs {
   font-size: 0.75rem;
-}
-
-.bg-opacity-50 {
-  background-opacity: 0.5;
-}
-
-.bg-opacity-75 {
-  background-opacity: 0.75;
-}
-
-.hover\:bg-opacity-75:hover {
-  background-opacity: 0.75;
 }
 
 .text-left {
@@ -568,6 +545,10 @@ button.selected {
   max-width: 28rem;
 }
 
+.ml-2 {
+  margin-left: 0.5rem;
+}
+
 .mx-4 {
   margin-left: 1rem;
   margin-right: 1rem;
@@ -595,4 +576,12 @@ button.selected {
 
 .gap-2 {
   gap: 0.5rem;
+}
+
+.p-2 {
+  padding: 0.5rem;
+}
+
+.w-100 {
+  width: 100%;
 }
