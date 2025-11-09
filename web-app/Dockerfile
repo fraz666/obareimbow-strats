@@ -1,6 +1,7 @@
 FROM denoland/deno:latest AS builder
 WORKDIR /app
 COPY . .
+RUN deno -v
 RUN deno task build
 RUN deno cache _fresh/server.js
 
