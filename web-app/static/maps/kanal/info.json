@@ -1,0 +1,34 @@
+{
+  "layers": [
+    "basement",
+    "1st-floor",
+    "2nd-floor",
+    "roof"
+  ],
+  "bombsites": [
+    {
+      "name": "Server Room and Radar Room",
+      "code": "server-radar",
+      "layer": 2
+    },
+    {
+      "name": "Security Room and Maps Room",
+      "code": "security-maps",
+      "layer": 2
+    },
+    {
+      "name": "Coast Guard Meeting Room and Lounge",
+      "code": "coastguard-lounge",
+      "layer": 1
+    },
+    {
+      "name": "Supply Room and Kayaks",
+      "code": "supply-kayaks",
+      "layer": 0
+    }
+  ]
+}
+
+
+
+

@@ -1,30 +1,29 @@
 {
   "layers": [
     "basement",
-    "ground",
-    "2nd-floor",
-    "roof"
+    "1st-floor",
+    "2nd-floor"
   ],
   "bombsites": [
     {
-      "name": "Gym and Bedroom",
-      "code": "gym-bedroom",
+      "name": "Games Room and Aviator Room",
+      "code": "games-aviator",
       "layer": 2
     },
     {
-      "name": "CCTV Room and Cash Room",
-      "code": "cctv-cashroom",
+      "name": "Trophy Room and Statue Room",
+      "code": "trophy-statue",
       "layer": 2
     },
     {
-      "name": "Bar and Stage",
-      "code": "bar-stage",
+      "name": "Kitchen and Dining Room",
+      "code": "kitchen-dining",
       "layer": 1
     },
     {
-      "name": "Church and Arsenal Room",
-      "code": "church-arsenal",
-      "layer": 0
+      "name": "Library and Lounge",
+      "code": "library-lounge",
+      "layer": 1
     }
   ]
 }

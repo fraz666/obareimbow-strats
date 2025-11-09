@@ -1,0 +1,29 @@
+{
+  "layers": [
+    "1st-floor",
+    "2nd-floor",
+    "roof"
+  ],
+  "bombsites": [
+    {
+      "name": "Piano Room and Laundry",
+      "code": "piano-laundry",
+      "layer": 1
+    },
+    {
+      "name": "Party Room and Office",
+      "code": "party-office",
+      "layer": 1
+    },
+    {
+      "name": "Green Bedroom and Red Bedroom",
+      "code": "green-red",
+      "layer": 0
+    },
+    {
+      "name": "Mechanic Shop and Kitchen",
+      "code": "mechanic-kitchen",
+      "layer": 0
+    }
+  ]
+}

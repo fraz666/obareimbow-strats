@@ -1,0 +1,33 @@
+{
+  "layers": [
+    "1st-floor",
+    "2nd-floor",
+    "roof"
+  ],
+  "bombsites": [
+    {
+      "name": "Theater and Penthouse",
+      "code": "theater-penthouse",
+      "layer": 1
+    },
+    {
+      "name": "Hookah Loungeand Billiards Room",
+      "code": "hookah-billiards",
+      "layer": 1
+    },
+    {
+      "name": "Blue Bar and Sunrise Bar",
+      "code": "blue-sunrise",
+      "layer": 0
+    },
+    {
+      "name": "Service Entrance and Kitchen",
+      "code": "service-kitchen",
+      "layer": 0
+    }
+  ]
+}
+
+
+
+

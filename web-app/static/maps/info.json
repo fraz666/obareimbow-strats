@@ -1,7 +1,13 @@
 [
   { "code": "bank", "name": "Bank" },
-  { "code": "clubhouse", "name": "Clubhouse" },
+  { "code": "border", "name": "Border" },
   { "code": "chalet", "name": "Chalet" },
+  { "code": "clubhouse", "name": "Clubhouse" },
+  { "code": "coastline", "name": "Coastline" },
+  { "code": "kanal", "name": "Kanal" },
   { "code": "oregon", "name": "Oregon" },
+  { "code": "outback", "name": "Outback" },
+  { "code": "skyscraper", "name": "Skyscraper" },
+  { "code": "theme-park", "name": "Theme Park" },
   { "code": "villa", "name": "Villa" }
 ]
