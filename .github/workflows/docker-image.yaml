@@ -3,11 +3,12 @@ name: Docker Image CI
 on:
   push:
     branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ] # temporary
 
 jobs:
 
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -22,5 +23,7 @@ jobs:
     - name: Build and push Docker images
       uses: docker/build-push-action@v6
       with:
+        context: ./web-app
         push: true
+        platforms: linux/arm64
         tags: fraz666/obareimbow-strats:latest, fraz666/obareimbow-strats:${{ github.sha }}
