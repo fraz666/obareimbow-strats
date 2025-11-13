@@ -216,6 +216,7 @@ export function MapWithStrats(props: { configuration: MapWithStratsProps }) {
         />
 
         <MapDraweArea
+          isAdmin={isAdmin}
           mapCode={map.code}
           currentStrat={currentStrat.value}
           currentLayer={currentLayer.value}

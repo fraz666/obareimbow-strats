@@ -1,4 +1,4 @@
 export interface Strategy {
   code: string;
-  strokesByLayer: { [key: string]: any[][] };
+  strokesByLayer: { [key: string]: {x: number, y: number}[][] };
 }
