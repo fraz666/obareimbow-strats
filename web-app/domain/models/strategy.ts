@@ -1,4 +1,9 @@
 export interface Strategy {
   code: string;
-  strokesByLayer: { [key: string]: {x: number, y: number}[][] };
+  players: (string | null)[];
+  traces: TraceGroupByLayer;
 }
+
+export type TraceGroupByLayer = { [key: string]: TraceGroupByPlayer };
+export type TraceGroupByPlayer = { [key: number]: TraceGroupByStroke };
+export type TraceGroupByStroke = {x: number, y: number}[][];

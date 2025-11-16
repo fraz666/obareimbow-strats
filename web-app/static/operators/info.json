@@ -34,7 +34,9 @@
     "Sens",
     "Grim",
     "Brava",
-    "Ram"
+    "Ram",
+    "Deimos",
+    "Raurora"
   ],
   "defense": [
     "Smoke",
@@ -71,6 +73,8 @@
     "Azami",
     "Solis",
     "Fenrir",
-    "Tubarao"
+    "Tubarao",
+    "Skopos",
+    "Denari"
   ]
 }

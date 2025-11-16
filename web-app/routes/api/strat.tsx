@@ -56,7 +56,7 @@ export const handler = define.handlers({
     const existingStrat = strats.find((s) => s.code === newStrat.code);
     if (existingStrat) {
       // Update existing strat
-      existingStrat.strokesByLayer = newStrat.strokesByLayer;
+      existingStrat.traces = newStrat.traces;
     } else {
       // Add new strat
       strats.push(newStrat);
