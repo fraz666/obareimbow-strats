@@ -1,9 +1,12 @@
-import { signal } from "@preact/signals";
+import { Signal, signal } from "@preact/signals";
 import { Strategy } from "../../../../domain/models/strategy.ts";
+import { Side } from "../../../../domain/models/side.ts";
 import { TRACE_COLORS } from "../../../../domain/costants.ts";
+import OperatorsModal from "../../../../components/OperatorsModal.tsx";
 
 interface StratManagerProps {
   isAdmin: boolean;
+  side: Side;
   currentStrat: Partial<Strategy> | null;
   availableStrats: Partial<Strategy>[];
   currentPlayerIndex: number | null;
@@ -17,6 +20,7 @@ interface StratManagerProps {
 export function StratManager(props: StratManagerProps) {
   const {
     isAdmin,
+    side,
     currentStrat,
     availableStrats,
     currentPlayerIndex,
@@ -26,6 +30,9 @@ export function StratManager(props: StratManagerProps) {
     onStratDelete,
     onPlayerChange,
   } = props;
+
+  const isModalOpen = signal(false);
+  const modalRelatedPlayerIndex: Signal<number|null> = signal(null);
 
   const stratName = signal(currentStrat?.code ?? "");
 
@@ -44,7 +51,10 @@ export function StratManager(props: StratManagerProps) {
                   width: "48px",
                   height: "48px",
                 }}
-                onClick={() => {}}
+                onClick={() => {
+                  modalRelatedPlayerIndex.value = idx;
+                  isModalOpen.value = true;
+                }}
               >
               </button>
             )}
@@ -54,7 +64,10 @@ export function StratManager(props: StratManagerProps) {
                 type="button"
                 class="bg-gray-700 text-gray-300 hover:bg-gray-600"
                 style={{ width: "48px", height: "48px" }}
-                onClick={() => {}}
+                onClick={() => {
+                  modalRelatedPlayerIndex.value = idx;
+                  isModalOpen.value = true;
+                }}
               >
                 {idx + 1}
               </button>
@@ -69,6 +82,26 @@ export function StratManager(props: StratManagerProps) {
           </div>
         );
       })}
+      <OperatorsModal
+        isOpen={isModalOpen}
+        side={side}
+        onSelect={(operator: string) => {
+          console.log("Selected operator:", operator);
+
+          if (currentStrat) {
+            currentStrat.players![modalRelatedPlayerIndex.value!] = operator;
+          }
+
+          console.warn("Current strat after selection:", currentStrat?.players);
+
+          isModalOpen.value = false;
+          modalRelatedPlayerIndex.value = null;
+        }}
+        onClose={() => {
+          isModalOpen.value = false;
+          modalRelatedPlayerIndex.value = null;
+        }}
+      />
     </div>
   );
 

@@ -123,8 +123,6 @@ export function MapWithStrats(props: { configuration: MapWithStratsProps }) {
     };
     availableStrats.value = [...strats, newStrat];
     currentStrat.value = newStrat;
-
-    console.log("Add strat");
   };
 
   const onStratSave = async (s: Partial<Strategy>) => {
@@ -209,6 +207,7 @@ export function MapWithStrats(props: { configuration: MapWithStratsProps }) {
           />
           <StratManager
             isAdmin={isAdmin}
+            side={currentSide.value}
             currentStrat={currentStrat.value ?? null}
             availableStrats={availableStrats.value}
             currentPlayerIndex={currentPlayerIndex.value}

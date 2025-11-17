@@ -1,5 +1,6 @@
 {
   "attack": [
+    "Striker",
     "Sledge",
     "Thatcher",
     "Ash",
@@ -39,6 +40,7 @@
     "Raurora"
   ],
   "defense": [
+    "Sentry",
     "Smoke",
     "Mute",
     "Castle",

@@ -578,6 +578,10 @@ button.selected {
   grid-template-columns: repeat(2, 1fr);
 }
 
+.grid-cols-5 {
+  grid-template-columns: repeat(5, 1fr);
+}
+
 .gap-2 {
   gap: 0.5rem;
 }
