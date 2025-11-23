@@ -1,5 +1,6 @@
 {
   "attack": [
+    "Striker",
     "Sledge",
     "Thatcher",
     "Ash",
@@ -34,9 +35,12 @@
     "Sens",
     "Grim",
     "Brava",
-    "Ram"
+    "Ram",
+    "Deimos",
+    "Raurora"
   ],
   "defense": [
+    "Sentry",
     "Smoke",
     "Mute",
     "Castle",
@@ -71,6 +75,8 @@
     "Azami",
     "Solis",
     "Fenrir",
-    "Tubarao"
+    "Tubarao",
+    "Skopos",
+    "Denari"
   ]
 }

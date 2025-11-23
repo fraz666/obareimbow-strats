@@ -1,15 +1,18 @@
 import { useEffect, useRef } from "preact/hooks";
 import { useSignal } from "@preact/signals";
 import { Strategy } from "../../../../domain/models/strategy.ts";
+import { TRACE_COLORS } from "../../../../domain/costants.ts";
 
 interface MapDraweAreaProps {
+  isAdmin: boolean;
   mapCode: string;
   currentStrat: Strategy | null;
   currentLayer: string;
+  currentPlayerIndex: number;
 }
 
 export function MapDraweArea(props: MapDraweAreaProps) {
-  const { mapCode, currentStrat, currentLayer } = props;
+  const { isAdmin, currentStrat, currentLayer, currentPlayerIndex } = props;
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -31,7 +34,7 @@ export function MapDraweArea(props: MapDraweAreaProps) {
     return () => {
       detachCanvasEvents();
     };
-  }, [currentStrat, currentLayer]);
+  }, [currentStrat, currentLayer, currentPlayerIndex]);
 
   const resizeCanvas = () => {
     const imgRef = document.getElementById(
@@ -70,22 +73,38 @@ export function MapDraweArea(props: MapDraweAreaProps) {
     // Draw all strokes for current layer
     if (currentStrat == null) return;
 
-    currentStrat!.strokesByLayer[currentLayer]?.forEach((strokePoints) => {
-      if (strokePoints.length < 2) return;
+    const currentLayerTraces = currentStrat.traces[currentLayer];
+    if (!currentLayerTraces) return;
 
-      ctx.beginPath();
-      ctx.lineWidth = 3;
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
+    Object.keys(currentLayerTraces).forEach((playerIdxStr) => {
+      const playerIdx = +playerIdxStr;
+      const strokeColor = TRACE_COLORS[playerIdx] + "dd"; // semi-transparent
 
-      // Set opacity based on whether this player is selected
-      ctx.strokeStyle = "#00ff00" + "dd";
+      currentLayerTraces[playerIdx]?.forEach((strokePoints) => {
+        if (strokePoints.length < 2) return;
 
-      ctx.moveTo(strokePoints[0].x, strokePoints[0].y);
-      for (let i = 1; i < strokePoints.length; i++) {
-        ctx.lineTo(strokePoints[i].x, strokePoints[i].y);
-      }
-      ctx.stroke();
+        ctx.beginPath();
+        ctx.lineWidth = 3;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+
+        // Set opacity based on whether this player is selected
+        ctx.strokeStyle = strokeColor;
+
+        // Map stored points to current canvas pixels
+        const first = strokePoints[0];
+        const startX = first.x * canvas.width;
+        const startY = first.y * canvas.height;
+        ctx.moveTo(startX, startY);
+
+        for (let i = 1; i < strokePoints.length; i++) {
+          const p = strokePoints[i];
+          const x = p.x * canvas.width;
+          const y = p.y * canvas.height;
+          ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      });
     });
   };
 
@@ -93,7 +112,7 @@ export function MapDraweArea(props: MapDraweAreaProps) {
     if (e.key === "z" && (e.ctrlKey || e.metaKey)) {
       if (currentStrat == null) return;
 
-      const strokes = currentStrat!.strokesByLayer[currentLayer];
+      const strokes = currentStrat!.traces[currentLayer][currentPlayerIndex];
       if (strokes && strokes.length > 0) {
         strokes.pop();
         redrawCanvas();
@@ -122,7 +141,7 @@ export function MapDraweArea(props: MapDraweAreaProps) {
     const coords = getMouseCoords(e);
     // console.log("Mouse position:", coords);
 
-    if (currentStrat != null) {
+    if (isAdmin && currentStrat != null) {
       isDrawing.value = true;
       currentStroke.value = [coords];
     }
@@ -142,11 +161,12 @@ export function MapDraweArea(props: MapDraweAreaProps) {
       const points = currentStroke.value;
       const lastPoint = points[points.length - 2];
 
+      const color = TRACE_COLORS[currentPlayerIndex];
       ctx.beginPath();
       ctx.lineWidth = 3;
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
-      ctx.strokeStyle = "#00ff00";
+      ctx.strokeStyle = color;
       ctx.moveTo(lastPoint.x, lastPoint.y);
       ctx.lineTo(coords.x, coords.y);
       ctx.stroke();
@@ -156,31 +176,25 @@ export function MapDraweArea(props: MapDraweAreaProps) {
   const stopDrawing = () => {
     if (!isDrawing.value) return;
 
-    // console.log(
-    //   "Stopping drawing, stroke length:",
-    //   currentStroke.value.length,
-    // );
-
-    // // Save the completed stroke
-    // if (currentStroke.value.length >= 2) {
-    //   const newStroke: DrawingStroke = {
-    //     playerId: selectedPlayer || 1, // Default to player 1
-    //     color: currentDrawingColor.value || "#ff0000", // Default to red
-    //     tool: drawingMode.value,
-    //     points: [...currentStroke.value],
-    //     layer: currentLayerIndex,
-    //   };
-    //   allStrokes.value = [...allStrokes.value, newStroke];
-    //   console.log("Saved stroke:", newStroke);
-    // }
-
     if (currentStrat == null) return;
 
-    if (!currentStrat.strokesByLayer[currentLayer]) {
-      currentStrat.strokesByLayer[currentLayer] = [];
+    if (!currentStrat.traces[currentLayer]) {
+      currentStrat.traces[currentLayer] = {};
     }
 
-    currentStrat!.strokesByLayer[currentLayer].push(currentStroke.value);
+    if (!currentStrat.traces[currentLayer][currentPlayerIndex]) {
+      currentStrat.traces[currentLayer][currentPlayerIndex] = [];
+    }
+
+    // Convert current stroke (stored in canvas pixels) to normalized [0..1]
+    // so that strokes scale correctly when canvas size changes.
+    const canvas = canvasRef.current!;
+    const normalized = currentStroke.value.map((p) => ({
+      x: canvas.width > 0 ? p.x / canvas.width : 0,
+      y: canvas.height > 0 ? p.y / canvas.height : 0,
+    }));
+    
+    currentStrat.traces[currentLayer][currentPlayerIndex].push(normalized);
 
     isDrawing.value = false;
     currentStroke.value = [];

@@ -42,6 +42,8 @@ export function MapWithStrats(props: { configuration: MapWithStratsProps }) {
   const currentStrat = useSignal<Strategy | null>(null);
   const availableStrats = useSignal<Strategy[]>([]);
 
+  const currentPlayerIndex = useSignal<number>(0);
+
   useEffect(() => {
     getStratsForCurrentSelection();
   }, [currentSide.value, currentBombsite.value]);
@@ -74,6 +76,11 @@ export function MapWithStrats(props: { configuration: MapWithStratsProps }) {
         currentStrat.value = requestedStrat;
       } else {
         currentStrat.value = availableStrats.value[0];
+      }
+
+      // FIX: tmp players fixup
+      if (currentStrat.value.players == null) {
+        currentStrat.value.players = [null, null, null, null, null];
       }
     }
 
@@ -111,18 +118,29 @@ export function MapWithStrats(props: { configuration: MapWithStratsProps }) {
 
     const newStrat: Strategy = {
       code: newStratName,
-      strokesByLayer: {},
+      players: [null, null, null, null, null],
+      traces: {},
     };
     availableStrats.value = [...strats, newStrat];
     currentStrat.value = newStrat;
-
-    console.log("Add strat");
   };
 
-  const onStratSave = async (s: string) => {
+  const onPlayersChange = (players: (string|null)[]) => {
+    if (currentStrat.value) {
+      currentStrat.value = {
+        ...currentStrat.value,
+        players: players,
+      };
+    }
+  };
+
+  const onStratSave = async (s: Partial<Strategy>) => {
+    if (!s) return;
     // TODO: show spinner
-    const strat = availableStrats.value.find((st) => st.code === s);
+    const strat = availableStrats.value.find((st) => st.code === s.code);
     if (!strat) return;
+
+    strat.players = s.players ?? strat.players;
 
     const res = await fetch(
       `/api/strat?map=${map.code}&side=${currentSide.value}&bombsite=${currentBombsite.value.code}`,
@@ -198,12 +216,16 @@ export function MapWithStrats(props: { configuration: MapWithStratsProps }) {
           />
           <StratManager
             isAdmin={isAdmin}
-            currentStrat={currentStrat.value?.code ?? null}
-            availableStrats={availableStrats.value.map((s) => s.code)}
+            side={currentSide.value}
+            currentStrat={currentStrat.value ?? null}
+            availableStrats={availableStrats.value}
+            currentPlayerIndex={currentPlayerIndex.value}
             onStratChange={onStratChange}
             onStratAdd={onStratAdd}
             onStratSave={onStratSave}
             onStratDelete={onStratDelete}
+            onPlayerChange={(idx) => { currentPlayerIndex.value = idx}}
+            onPlayersChange={onPlayersChange}
           />
         </div>
       </div>
@@ -216,9 +238,11 @@ export function MapWithStrats(props: { configuration: MapWithStratsProps }) {
         />
 
         <MapDraweArea
+          isAdmin={isAdmin}
           mapCode={map.code}
           currentStrat={currentStrat.value}
           currentLayer={currentLayer.value}
+          currentPlayerIndex={currentPlayerIndex.value}
         />
       </div>
     </div>

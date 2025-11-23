@@ -1,27 +1,108 @@
-import { signal } from "@preact/signals";
+import { Signal, signal } from "@preact/signals";
+import { Strategy } from "../../../../domain/models/strategy.ts";
+import { Side } from "../../../../domain/models/side.ts";
+import { TRACE_COLORS } from "../../../../domain/costants.ts";
+import OperatorsModal from "../../../../components/OperatorsModal.tsx";
 
 interface StratManagerProps {
   isAdmin: boolean;
-  currentStrat: string | null;
-  availableStrats: string[];
+  side: Side;
+  currentStrat: Partial<Strategy> | null;
+  availableStrats: Partial<Strategy>[];
+  currentPlayerIndex: number | null;
   onStratChange: (s: string) => void;
   onStratAdd: () => void;
-  onStratSave: (s: string) => void;
+  onStratSave: (s: Partial<Strategy>) => void;
   onStratDelete: (s: string) => void;
+  onPlayerChange: (idx: number) => void;
+  onPlayersChange: (ops: (string | null)[]) => void;
 }
 
 export function StratManager(props: StratManagerProps) {
   const {
     isAdmin,
+    side,
     currentStrat,
     availableStrats,
     onStratChange,
     onStratAdd,
     onStratSave,
     onStratDelete,
+    onPlayerChange,
+    onPlayersChange,
   } = props;
 
-  const stratName = signal(currentStrat ?? "");
+  const isModalOpen = signal(false);
+  const modalRelatedPlayerIndex: Signal<number|null> = signal(null);
+
+  const stratName = signal(currentStrat?.code ?? "");
+
+  const playerPicker = (
+    <div class="flex flex-col gap-2 pt-2 pb-2">
+      {(currentStrat?.players ?? []).map((p, idx) => {
+        return (
+          <div class="flex flex-row">
+            {p != null && (
+              <button
+                type="button"
+                class="bg-gray-700 text-gray-300 hover:bg-gray-600"
+                style={{
+                  backgroundImage: `url(/operators/${p}.png)`,
+                  backgroundSize: "cover",
+                  width: "48px",
+                  height: "48px",
+                }}
+                onClick={() => {
+                  modalRelatedPlayerIndex.value = idx;
+                  isModalOpen.value = true;
+                }}
+              >
+              </button>
+            )}
+
+            {p == null && (
+              <button
+                type="button"
+                class="bg-gray-700 text-gray-300 hover:bg-gray-600"
+                style={{ width: "48px", height: "48px" }}
+                onClick={() => {
+                  modalRelatedPlayerIndex.value = idx;
+                  isModalOpen.value = true;
+                }}
+              >
+                {idx + 1}
+              </button>
+            )}
+
+            <button
+              type="button"
+              style={{ flex: 1, backgroundColor: TRACE_COLORS[idx] }}
+              onClick={() => onPlayerChange(idx)}
+            >
+            </button>
+          </div>
+        );
+      })}
+      <OperatorsModal
+        isOpen={isModalOpen}
+        side={side}
+        onSelect={(operator: string) => {
+          if (currentStrat) {
+            const currentPlayers = currentStrat.players ?? [];
+            currentPlayers[modalRelatedPlayerIndex.value!] = operator;
+            onPlayersChange(currentPlayers);
+          }
+
+          isModalOpen.value = false;
+          modalRelatedPlayerIndex.value = null;
+        }}
+        onClose={() => {
+          isModalOpen.value = false;
+          modalRelatedPlayerIndex.value = null;
+        }}
+      />
+    </div>
+  );
 
   return (
     <div>
@@ -38,22 +119,22 @@ export function StratManager(props: StratManagerProps) {
 
       <div class="strats-container">
         {availableStrats.map((strat) => {
-          // TODO admin check here
-
-          if (currentStrat === strat) {
+          // Selected strat
+          if (stratName.value === strat.code) {
             if (isAdmin) {
               return (
                 <div class="bg-blue-600 text-white p-2">
                   <input
-                    class="w-100 text-center bg-gray-700 text-gray-300 hover:bg-gray-600 focus:outline-none"
-                    value={currentStrat}
+                    class="w-100 mb-2 text-center bg-gray-700 text-gray-300 hover:bg-gray-600 focus:outline-none"
+                    value={stratName.value}
                     onInput={(e) => stratName.value = e.currentTarget.value}
                     readOnly
                   />
+                  {playerPicker}
                   <button
                     type="button"
                     class="bg-gray-700 text-gray-300 hover:bg-gray-600"
-                    onClick={() => onStratSave(stratName.value)}
+                    onClick={() => onStratSave(currentStrat!)}
                   >
                     Save
                   </button>
@@ -70,22 +151,23 @@ export function StratManager(props: StratManagerProps) {
               return (
                 <button
                   type="button"
-                  onClick={() => onStratChange(strat)}
+                  onClick={() => onStratChange(strat.code!)}
                   class="bg-blue-600 text-gray-300"
                 >
-                  {strat}
+                  {strat.code}
                 </button>
               );
             }
           }
 
+          // Unselected strat
           return (
             <button
               type="button"
-              onClick={() => onStratChange(strat)}
+              onClick={() => onStratChange(strat.code!)}
               class="bg-gray-700 text-gray-300 hover:bg-gray-600"
             >
-              {strat}
+              {strat.code}
             </button>
           );
         })}

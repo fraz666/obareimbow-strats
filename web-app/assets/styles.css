@@ -545,6 +545,10 @@ button.selected {
   max-width: 28rem;
 }
 
+.mb-2 {
+  margin-bottom: 0.5rem;
+}
+
 .ml-2 {
   margin-left: 0.5rem;
 }
@@ -574,12 +578,20 @@ button.selected {
   grid-template-columns: repeat(2, 1fr);
 }
 
+.grid-cols-5 {
+  grid-template-columns: repeat(5, 1fr);
+}
+
 .gap-2 {
   gap: 0.5rem;
 }
 
 .p-2 {
   padding: 0.5rem;
+}
+
+.pb-2 {
+  padding-bottom: 0.5rem;
 }
 
 .w-100 {
