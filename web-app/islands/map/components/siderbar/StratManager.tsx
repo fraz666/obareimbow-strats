@@ -15,6 +15,7 @@ interface StratManagerProps {
   onStratSave: (s: Partial<Strategy>) => void;
   onStratDelete: (s: string) => void;
   onPlayerChange: (idx: number) => void;
+  onPlayersChange: (ops: (string | null)[]) => void;
 }
 
 export function StratManager(props: StratManagerProps) {
@@ -23,12 +24,12 @@ export function StratManager(props: StratManagerProps) {
     side,
     currentStrat,
     availableStrats,
-    currentPlayerIndex,
     onStratChange,
     onStratAdd,
     onStratSave,
     onStratDelete,
     onPlayerChange,
+    onPlayersChange,
   } = props;
 
   const isModalOpen = signal(false);
@@ -86,13 +87,11 @@ export function StratManager(props: StratManagerProps) {
         isOpen={isModalOpen}
         side={side}
         onSelect={(operator: string) => {
-          console.log("Selected operator:", operator);
-
           if (currentStrat) {
-            currentStrat.players![modalRelatedPlayerIndex.value!] = operator;
+            const currentPlayers = currentStrat.players ?? [];
+            currentPlayers[modalRelatedPlayerIndex.value!] = operator;
+            onPlayersChange(currentPlayers);
           }
-
-          console.warn("Current strat after selection:", currentStrat?.players);
 
           isModalOpen.value = false;
           modalRelatedPlayerIndex.value = null;

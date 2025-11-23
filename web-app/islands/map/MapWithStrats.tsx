@@ -125,6 +125,15 @@ export function MapWithStrats(props: { configuration: MapWithStratsProps }) {
     currentStrat.value = newStrat;
   };
 
+  const onPlayersChange = (players: (string|null)[]) => {
+    if (currentStrat.value) {
+      currentStrat.value = {
+        ...currentStrat.value,
+        players: players,
+      };
+    }
+  };
+
   const onStratSave = async (s: Partial<Strategy>) => {
     if (!s) return;
     // TODO: show spinner
@@ -216,6 +225,7 @@ export function MapWithStrats(props: { configuration: MapWithStratsProps }) {
             onStratSave={onStratSave}
             onStratDelete={onStratDelete}
             onPlayerChange={(idx) => { currentPlayerIndex.value = idx}}
+            onPlayersChange={onPlayersChange}
           />
         </div>
       </div>

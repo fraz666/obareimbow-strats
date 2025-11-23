@@ -56,6 +56,7 @@ export const handler = define.handlers({
     const existingStrat = strats.find((s) => s.code === newStrat.code);
     if (existingStrat) {
       // Update existing strat
+      existingStrat.players = newStrat.players;
       existingStrat.traces = newStrat.traces;
     } else {
       // Add new strat
